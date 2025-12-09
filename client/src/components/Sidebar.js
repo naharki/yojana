@@ -37,6 +37,7 @@ export default function Sidebar({ collapsed = false }) {
         { id: 'schemes', label: 'Schemes', href: '/dashboard/planning/schemes' },
         { id: 'projects', label: 'Projects', href: '/dashboard/planning/projects' },
         { id: 'activities', label: 'Activities', href: '/dashboard/planning/activities' },
+        { id: 'plans', label: 'Plans', href: '/dashboard/planning/plan' },
       ],
     },
     {
