@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import { Edit2, Trash2, MoreHorizontal } from 'lucide-react';
 
-export default function CommitteeTypeList({ types, onEdit, onDelete }) {
+export default function WardList({ items, onEdit, onDelete }) {
   const [openId, setOpenId] = useState(null);
 
-  if (!types || types.length === 0) {
+  if (!items || items.length === 0) {
     return (
       <div className="alert alert-info">
-        <p className="mb-0">No committee types found. Create one to get started.</p>
+        <p className="mb-0">No wards found. Add one to get started.</p>
       </div>
     );
   }
@@ -20,34 +20,32 @@ export default function CommitteeTypeList({ types, onEdit, onDelete }) {
         <thead className="table-light">
           <tr>
             <th style={{ width: '5%' }}>S.N</th>
-            <th style={{ width: '30%' }}>Type</th>
-            <th style={{ width: '30%' }}>Type in English</th>
-            <th style={{ width: '20%' }}>Code</th>
+            <th style={{ width: '55%' }}>Name</th>
+            <th style={{ width: '25%' }}>Code</th>
             <th style={{ width: '15%' }}>Action</th>
           </tr>
         </thead>
         <tbody>
-          {types.map((type, index) => (
-            <tr key={type.id} style={{ position: 'relative' }}>
+          {items.map((it, index) => (
+            <tr key={it.id} style={{ position: 'relative' }}>
               <td>
                 <strong>{index + 1}</strong>
               </td>
-              <td>{type.name}</td>
-              <td>{type.name_eng}</td>
+              <td>{it.name}</td>
               <td>
-                <span className="badge bg-secondary">{type.committee_type_code}</span>
+                <span className="badge bg-secondary">{it.code}</span>
               </td>
               <td>
                 <div style={{ position: 'relative', display: 'inline-block' }}>
                   <button
                     className="btn btn-sm btn-outline-secondary"
-                    onClick={() => setOpenId(openId === type.id ? null : type.id)}
+                    onClick={() => setOpenId(openId === it.id ? null : it.id)}
                     title="Actions"
                   >
                     <MoreHorizontal size={16} />
                   </button>
 
-                  {openId === type.id && (
+                  {openId === it.id && (
                     <div
                       className="card shadow-sm p-2"
                       style={{
@@ -62,7 +60,7 @@ export default function CommitteeTypeList({ types, onEdit, onDelete }) {
                         className="btn btn-sm btn-light d-flex align-items-center w-100 mb-1"
                         onClick={() => {
                           setOpenId(null);
-                          onEdit(type);
+                          onEdit(it);
                         }}
                       >
                         <Edit2 size={14} className="me-2" /> Edit
@@ -71,8 +69,8 @@ export default function CommitteeTypeList({ types, onEdit, onDelete }) {
                         className="btn btn-sm btn-danger d-flex align-items-center w-100"
                         onClick={() => {
                           setOpenId(null);
-                          if (confirm('Are you sure you want to delete this type?')) {
-                            onDelete(type.id);
+                          if (confirm('Are you sure you want to delete this ward?')) {
+                            onDelete(it.id);
                           }
                         }}
                       >

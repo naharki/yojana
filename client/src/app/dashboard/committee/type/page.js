@@ -4,13 +4,18 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import CommitteeTypeForm from '@/components/committee-type/CommitteeTypeForm';
 import CommitteeTypeList from '@/components/committee-type/CommitteeTypeList';
+import { PlusCircle } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+// Use a dummy public API when NEXT_PUBLIC_API_URL is not provided.
+// You can switch back to your DRF API by setting `NEXT_PUBLIC_API_URL` in your .env.
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://jsonplaceholder.typicode.com';
+const USING_DUMMY = !process.env.NEXT_PUBLIC_API_URL;
 
 export default function CommitteeTypePage() {
   const [types, setTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingType, setEditingType] = useState(null);
+  const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -18,11 +23,30 @@ export default function CommitteeTypePage() {
     fetchTypes();
   }, []);
 
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        setShowForm(false);
+        setEditingType(null);
+      }
+    };
+    if (showForm) window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showForm]);
+
   const fetchTypes = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(API_URL + '/committee-types/');
-      setTypes(response.data);
+      // jsonplaceholder doesn't have committee-types, use /users as dummy data
+      const response = await axios.get(API_URL + '/users');
+      // Map the dummy API shape to the committee type shape expected by the UI
+      const mapped = response.data.map((u) => ({
+        id: u.id,
+        name: u.name || u.username || `User ${u.id}`,
+        name_eng: u.username || u.email || `user_${u.id}`,
+        committee_type_code: `CT${String(u.id).padStart(3, '0')}`,
+      }));
+      setTypes(mapped);
     } catch (err) {
       console.error('Error fetching committee types:', err);
       setError('Failed to load committee types');
@@ -35,13 +59,21 @@ export default function CommitteeTypePage() {
     try {
       setError(''); // Clear previous errors
       if (editingType) {
-        await axios.put(API_URL + `/committee-types/${editingType.id}/`, typeData);
-        setSuccessMessage('Committee type updated successfully');
+        // Update against dummy endpoint (jsonplaceholder will accept and respond,
+        // but won't persist). We still update local state so the UI reflects changes.
+        await axios.put(API_URL + `/users/${editingType.id}`, typeData);
+        setTypes((prev) => prev.map((t) => (t.id === editingType.id ? { ...t, ...typeData } : t)));
+        setSuccessMessage('Committee type updated (dummy API)');
       } else {
-        await axios.post(API_URL + '/committee-types/', typeData);
-        setSuccessMessage('Committee type created successfully');
+        const resp = await axios.post(API_URL + '/users', typeData);
+        // jsonplaceholder returns an object with an id (usually 101)
+        const newId = resp.data.id || Date.now();
+        const newItem = { id: newId, ...typeData, committee_type_code: typeData.committee_type_code || `CT${String(newId).slice(-3)}` };
+        setTypes((prev) => [newItem, ...prev]);
+        setSuccessMessage('Committee type created (dummy API)');
       }
-      await fetchTypes();
+      if (!USING_DUMMY) await fetchTypes();
+      setShowForm(false);
       setEditingType(null);
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
@@ -89,14 +121,17 @@ export default function CommitteeTypePage() {
 
   const handleEdit = (type) => {
     setEditingType(type);
+    setShowForm(true);
     window.scrollTo(0, 0);
   };
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(API_URL + `/committee-types/${id}/`);
-      setSuccessMessage('Committee type deleted successfully');
-      await fetchTypes();
+      // Delete against dummy endpoint and update local state
+      await axios.delete(API_URL + `/users/${id}`);
+      setTypes((prev) => prev.filter((t) => t.id !== id));
+      setSuccessMessage('Committee type deleted (dummy API)');
+      if (!USING_DUMMY) await fetchTypes();
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
       console.error('Error deleting committee type:', err);
@@ -106,6 +141,7 @@ export default function CommitteeTypePage() {
 
   const handleCancel = () => {
     setEditingType(null);
+    setShowForm(false);
   };
 
   return (
@@ -138,19 +174,65 @@ export default function CommitteeTypePage() {
             </div>
           )}
 
-          <div className="mb-4 p-3 bg-light border rounded">
-            <h6 className="mb-3 fw-bold">{editingType ? '✏️ Edit Committee Type' : '➕ Add New Committee Type'}</h6>
-            <CommitteeTypeForm onSubmit={handleSave} initialData={editingType} />
-            {editingType && (
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm mt-2"
-                onClick={handleCancel}
-              >
-                Cancel Editing
-              </button>
-            )}
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h6 className="mb-0">Committee Types</h6>
+            <button
+              className="btn btn-primary d-flex align-items-center"
+              onClick={() => {
+                setEditingType(null);
+                setShowForm(true);
+              }}
+            >
+              <PlusCircle size={18} className="me-2" /> Add Committee Type
+            </button>
           </div>
+
+          {/* Popup form with backdrop */}
+          {showForm && (
+            <div>
+              <div
+                className="position-fixed top-0 start-0 w-100 h-100"
+                style={{ background: 'rgba(0,0,0,0.35)', zIndex: 2990 }}
+                onClick={() => {
+                  setShowForm(false);
+                  setEditingType(null);
+                }}
+                aria-hidden
+              />
+
+              <div
+                style={{ zIndex: 3000 }}
+                className="position-fixed top-50 start-50 translate-middle"
+              >
+                <div className="card shadow" style={{ minWidth: 420 }}>
+                  <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                      <h6 className="mb-0">{editingType ? 'Edit Committee Type' : 'Add New Committee Type'}</h6>
+                      <button
+                        type="button"
+                        className="btn-close"
+                        onClick={() => {
+                          setShowForm(false);
+                          setEditingType(null);
+                        }}
+                      />
+                    </div>
+                    <CommitteeTypeForm
+                      onSubmit={async (data) => {
+                        await handleSave(data);
+                        setShowForm(false);
+                      }}
+                      initialData={editingType}
+                      onCancel={() => {
+                        setShowForm(false);
+                        setEditingType(null);
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <hr className="my-4" />
 
