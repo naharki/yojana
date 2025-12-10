@@ -1,11 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import OfficeViewSet, CommitteeTypeViewSet
+from .view.office_view import OfficeViewSet
+from .view.fiscalyear import FiscalYearViewSet
 
 router = DefaultRouter()
 router.register(r'offices', OfficeViewSet, basename='office')
-router.register(r'committee-types', CommitteeTypeViewSet, basename='committee-type')
-
+router.register(r'fiscalyears', FiscalYearViewSet, basename='fiscalyear')
 urlpatterns = [
-    path('', include(router.urls)),
+    path('api/', include(router.urls)),
 ]

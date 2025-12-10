@@ -1,27 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import FiscalYearForm from "@/components/fiscal-year/FiscalYearForm";
 import FiscalYearList from "@/components/fiscal-year/FiscalYearList";
 import { PlusCircle } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://jsonplaceholder.typicode.com";
-const USING_DUMMY = !process.env.NEXT_PUBLIC_API_URL;
-
-function mapToFiscal(p, idx) {
-  // Map dummy post/user to a fiscal year-like object
-  const baseYear = 2018 + (p.id % 8);
-  const fy = `${baseYear}/${baseYear + 1}`;
-  const start_date = `${baseYear}-07-16`;
-  const end_date = `${baseYear + 1}-07-15`;
-  return {
-    id: p.id,
-    fiscal_year: p.title ? p.title.slice(0, 20) : fy,
-    start_date,
-    end_date,
-  };
-}
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function FiscalYearPage() {
   const [items, setItems] = useState([]);
@@ -50,11 +35,11 @@ export default function FiscalYearPage() {
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const resp = await axios.get(API_URL + "/posts");
-      const mapped = resp.data.slice(0, 10).map(mapToFiscal);
-      setItems(mapped);
+      const resp = await axios.get(API_URL + "/fiscalyears/");
+      // API returns { success, count, data: [...] }
+      setItems(resp.data.data || []);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching fiscal years:", err);
       setError("Failed to load fiscal years");
     } finally {
       setLoading(false);
@@ -65,23 +50,34 @@ export default function FiscalYearPage() {
     try {
       setError("");
       if (editing) {
-        await axios.put(API_URL + `/posts/${editing.id}`, data);
-        setItems((prev) => prev.map((it) => (it.id === editing.id ? { ...it, ...data } : it)));
-        setSuccess("Fiscal year updated (dummy API)");
+        // PUT request for update
+        await axios.put(API_URL + `/fiscalyears/${editing.id}/`, data);
+        setSuccess("Fiscal year updated successfully");
       } else {
-        const resp = await axios.post(API_URL + "/posts", data);
-        const newId = resp.data.id || Date.now();
-        const newItem = { id: newId, ...data };
-        setItems((prev) => [newItem, ...prev]);
-        setSuccess("Fiscal year created (dummy API)");
+        // POST request for create
+        await axios.post(API_URL + "/fiscalyears/", data);
+        setSuccess("Fiscal year created successfully");
       }
-      if (!USING_DUMMY) await fetchItems();
+      await fetchItems();
       setShowForm(false);
       setEditing(null);
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      console.error(err);
-      setError("Failed to save fiscal year");
+      console.error("Error saving fiscal year:", err);
+      // Handle validation errors from API
+      if (err.response?.data) {
+        const errorData = err.response.data;
+        if (typeof errorData === 'object') {
+          const messages = Object.entries(errorData)
+            .map(([key, val]) => `${key}: ${Array.isArray(val) ? val[0] : val}`)
+            .join(", ");
+          setError(messages);
+        } else {
+          setError(errorData);
+        }
+      } else {
+        setError("Failed to save fiscal year");
+      }
     }
   };
 
@@ -92,14 +88,14 @@ export default function FiscalYearPage() {
   };
 
   const handleDelete = async (id) => {
+    if (!confirm("Are you sure you want to delete this fiscal year?")) return;
     try {
-      await axios.delete(API_URL + `/posts/${id}`);
-      setItems((prev) => prev.filter((i) => i.id !== id));
-      setSuccess("Fiscal year deleted (dummy API)");
-      if (!USING_DUMMY) await fetchItems();
+      await axios.delete(API_URL + `/fiscalyears/${id}/`);
+      setSuccess("Fiscal year deleted successfully");
+      await fetchItems();
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      console.error(err);
+      console.error("Error deleting fiscal year:", err);
       setError("Failed to delete fiscal year");
     }
   };
@@ -108,11 +104,29 @@ export default function FiscalYearPage() {
     <div className="p-4">
       <div className="card shadow-sm">
         <div className="card-header bg-light border-bottom">
-          <h5 className="mb-0">Fiscal Year Management</h5>
+          <h5 className="mb-0">📅 Fiscal Year Management</h5>
         </div>
         <div className="card-body">
-          {error && <div className="alert alert-danger">{error}</div>}
-          {success && <div className="alert alert-success">{success}</div>}
+          {error && (
+            <div className="alert alert-danger alert-dismissible fade show" role="alert">
+              <strong>Error:</strong> {error}
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setError("")}
+              ></button>
+            </div>
+          )}
+          {success && (
+            <div className="alert alert-success alert-dismissible fade show" role="alert">
+              <strong>Success:</strong> {success}
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setSuccess("")}
+              ></button>
+            </div>
+          )}
 
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h6 className="mb-0">Fiscal Years</h6>
@@ -147,7 +161,7 @@ export default function FiscalYearPage() {
                 <div className="card shadow" style={{ minWidth: 420 }}>
                   <div className="card-body">
                     <div className="d-flex justify-content-between align-items-center mb-2">
-                      <h6 className="mb-0">{editing ? 'Edit Fiscal Year' : 'Add New Fiscal Year'}</h6>
+                      <h6 className="mb-0">{editing ? '✏️ Edit Fiscal Year' : '➕ Add New Fiscal Year'}</h6>
                       <button
                         type="button"
                         className="btn-close"
@@ -160,7 +174,6 @@ export default function FiscalYearPage() {
                     <FiscalYearForm
                       onSubmit={async (data) => {
                         await handleSave(data);
-                        setShowForm(false);
                       }}
                       initialData={editing}
                       onCancel={() => {
@@ -176,13 +189,15 @@ export default function FiscalYearPage() {
 
           <hr />
 
-          <h6 className="mb-3">List</h6>
+          <h6 className="mb-3">📊 Fiscal Years List</h6>
           {loading ? (
             <div className="text-center">
               <div className="spinner-border" role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>
             </div>
+          ) : items.length === 0 ? (
+            <div className="alert alert-info">No fiscal years found. Create one to get started!</div>
           ) : (
             <FiscalYearList items={items} onEdit={handleEdit} onDelete={handleDelete} />
           )}

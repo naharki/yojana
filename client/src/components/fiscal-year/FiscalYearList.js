@@ -32,7 +32,7 @@ export default function FiscalYearList({ items, onEdit, onDelete }) {
               <td>
                 <strong>{index + 1}</strong>
               </td>
-              <td>{it.fiscal_year}</td>
+              <td>{it.fiscalyear}</td>
               <td>{it.start_date}</td>
               <td>{it.end_date}</td>
               <td>
