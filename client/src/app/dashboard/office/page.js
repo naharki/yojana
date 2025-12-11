@@ -21,7 +21,7 @@ export default function OfficePage() {
     setLoading(true);
     try {
       const response = await axios.get(API_URL);
-      setOffices(response.data);
+      setOffices(response.data.data);
     } catch (error) {
       console.error('Error fetching offices:', error);
     } finally {

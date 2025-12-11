@@ -30,7 +30,8 @@ export default function OfficeList({ offices, loading, onEdit, onDelete }) {
             <th className="px-4 py-3 fw-bold text-dark">🏢 Office Name</th>
             <th className="px-4 py-3 fw-bold text-dark">📛 Full Name</th>
             <th className="px-4 py-3 fw-bold text-dark">📍 Location</th>
-            <th className="px-4 py-3 fw-bold text-dark">📅 Established</th>
+            <th className="px-4 py-3 fw-bold text-dark">Website</th>
+            <th className='px-4 py-3 fw-bold text-dark'>Contact</th>
             <th className="px-4 py-3 fw-bold text-dark text-center">⚙️ Actions</th>
           </tr>
         </thead>
@@ -38,15 +39,13 @@ export default function OfficeList({ offices, loading, onEdit, onDelete }) {
           {offices.map((office) => (
             <tr key={office.id} className="border-bottom">
               <td className="px-4 py-3">
-                <span className="fw-bold text-dark">{office.office_name}</span>
+                <span className="fw-bold text-dark">{office.name}</span>
               </td>
-              <td className="px-4 py-3 text-secondary">{office.office_full_name}</td>
-              <td className="px-4 py-3 text-secondary">
-                <small>{office.location.substring(0, 40)}...</small>
-              </td>
-              <td className="px-4 py-3">
-                <span className="badge bg-info">{new Date(office.established).toLocaleDateString()}</span>
-              </td>
+              <td className="px-4 py-3 text-secondary">{office.full_name}</td>
+              <td className="px-4 py-3 text-secondary">{office.location}</td>
+              <td className="px-4 py-3 text-secondary">{office.website}</td>
+              <td className="px-4 py-3 text-secondary">{office.phone_number}</td>
+              
               <td className="px-4 py-3 text-center">
                 <button
                   onClick={() => onEdit(office)}

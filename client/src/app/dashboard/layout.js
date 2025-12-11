@@ -7,19 +7,21 @@ import Sidebar from '@/components/Sidebar';
 import { LogOut } from 'lucide-react';
 import { Menu } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://jsonplaceholder.typicode.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
-  const [office, setOffice] = useState({ name: process.env.NEXT_PUBLIC_OFFICE_NAME || 'Example Office' });
+  const [office, setOffice] = useState({ name: process.env.NEXT_PUBLIC_OFFICE_NAME || 'Office' });
 
   useEffect(() => {
-    // fetch a dummy office/user from the dummy API and map to an office name
+    // fetch office info from the API
     (async () => {
       try {
-        const resp = await axios.get(API_URL + '/users/1');
-        const d = resp.data || {};
-        setOffice({ name: (d.company && d.company.name) ? d.company.name : d.name || office.name, user: d });
+        const resp = await axios.get(API_URL + '/offices/');
+        if (resp.data && resp.data.length > 0) {
+          const officeData = resp.data[0];
+          setOffice({ name: officeData.name || office.name });
+        }
       } catch (e) {
         // ignore – keep fallback
       }

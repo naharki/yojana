@@ -59,20 +59,13 @@ export default function CommitteeTypePage() {
     try {
       setError(''); // Clear previous errors
       if (editingType) {
-        // Update against dummy endpoint (jsonplaceholder will accept and respond,
-        // but won't persist). We still update local state so the UI reflects changes.
-        await axios.put(API_URL + `/users/${editingType.id}`, typeData);
-        setTypes((prev) => prev.map((t) => (t.id === editingType.id ? { ...t, ...typeData } : t)));
-        setSuccessMessage('Committee type updated (dummy API)');
+        await axios.put(API_URL + `/committee-types/${editingType.id}/`, typeData);
+        setSuccessMessage('Committee type updated successfully');
       } else {
-        const resp = await axios.post(API_URL + '/users', typeData);
-        // jsonplaceholder returns an object with an id (usually 101)
-        const newId = resp.data.id || Date.now();
-        const newItem = { id: newId, ...typeData, committee_type_code: typeData.committee_type_code || `CT${String(newId).slice(-3)}` };
-        setTypes((prev) => [newItem, ...prev]);
-        setSuccessMessage('Committee type created (dummy API)');
+        await axios.post(API_URL + '/committee-types/', typeData);
+        setSuccessMessage('Committee type created successfully');
       }
-      if (!USING_DUMMY) await fetchTypes();
+      await fetchTypes();
       setShowForm(false);
       setEditingType(null);
       setTimeout(() => setSuccessMessage(''), 3000);
@@ -127,11 +120,10 @@ export default function CommitteeTypePage() {
 
   const handleDelete = async (id) => {
     try {
-      // Delete against dummy endpoint and update local state
-      await axios.delete(API_URL + `/users/${id}`);
-      setTypes((prev) => prev.filter((t) => t.id !== id));
-      setSuccessMessage('Committee type deleted (dummy API)');
-      if (!USING_DUMMY) await fetchTypes();
+      if (!confirm('Are you sure you want to delete this committee type?')) return;
+      await axios.delete(API_URL + `/committee-types/${id}/`);
+      setSuccessMessage('Committee type deleted successfully');
+      await fetchTypes();
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
       console.error('Error deleting committee type:', err);

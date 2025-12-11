@@ -6,16 +6,7 @@ import WardForm from "@/components/ward/WardForm";
 import WardList from "@/components/ward/WardList";
 import { PlusCircle } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://jsonplaceholder.typicode.com";
-const USING_DUMMY = !process.env.NEXT_PUBLIC_API_URL;
-
-function mapToWard(p) {
-  return {
-    id: p.id,
-    name: p.title ? p.title.slice(0, 30) : `Ward ${p.id}`,
-    code: `W${String(p.id).padStart(3, '0')}`,
-  };
-}
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function WardPage() {
   const [items, setItems] = useState([]);
@@ -32,11 +23,10 @@ export default function WardPage() {
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const resp = await axios.get(API_URL + "/posts");
-      const mapped = resp.data.slice(0, 10).map(mapToWard);
-      setItems(mapped);
+      const resp = await axios.get(API_URL + "/wards/");
+      setItems(resp.data.data || resp.data);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching wards:", err);
       setError("Failed to load wards");
     } finally {
       setLoading(false);
@@ -58,23 +48,31 @@ export default function WardPage() {
     try {
       setError("");
       if (editing) {
-        await axios.put(API_URL + `/posts/${editing.id}`, data);
-        setItems((prev) => prev.map((it) => (it.id === editing.id ? { ...it, ...data } : it)));
-        setSuccess("Ward updated (dummy API)");
+        await axios.put(API_URL + `/wards/${editing.id}/`, data);
+        setSuccess("Ward updated successfully");
       } else {
-        const resp = await axios.post(API_URL + "/posts", data);
-        const newId = resp.data.id || Date.now();
-        const newItem = { id: newId, ...data, code: data.code || `W${String(newId).slice(-3)}` };
-        setItems((prev) => [newItem, ...prev]);
-        setSuccess("Ward created (dummy API)");
+        await axios.post(API_URL + "/wards/", data);
+        setSuccess("Ward created successfully");
       }
-      if (!USING_DUMMY) await fetchItems();
+      await fetchItems();
       setShowForm(false);
       setEditing(null);
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      console.error(err);
-      setError("Failed to save ward");
+      console.error("Error saving ward:", err);
+      if (err.response?.data) {
+        const errorData = err.response.data;
+        if (typeof errorData === 'object') {
+          const messages = Object.entries(errorData)
+            .map(([key, val]) => `${key}: ${Array.isArray(val) ? val[0] : val}`)
+            .join(", ");
+          setError(messages);
+        } else {
+          setError(errorData);
+        }
+      } else {
+        setError("Failed to save ward");
+      }
     }
   };
 
@@ -85,14 +83,14 @@ export default function WardPage() {
   };
 
   const handleDelete = async (id) => {
+    if (!confirm("Are you sure you want to delete this ward?")) return;
     try {
-      await axios.delete(API_URL + `/posts/${id}`);
-      setItems((prev) => prev.filter((i) => i.id !== id));
-      setSuccess("Ward deleted (dummy API)");
-      if (!USING_DUMMY) await fetchItems();
+      await axios.delete(API_URL + `/wards/${id}/`);
+      setSuccess("Ward deleted successfully");
+      await fetchItems();
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      console.error(err);
+      console.error("Error deleting ward:", err);
       setError("Failed to delete ward");
     }
   };
@@ -101,14 +99,32 @@ export default function WardPage() {
     <div className="p-4">
       <div className="card shadow-sm">
         <div className="card-header bg-light border-bottom">
-          <h5 className="mb-0">Wards</h5>
+          <h5 className="mb-0">🏘️ Ward Management</h5>
         </div>
         <div className="card-body">
-          {error && <div className="alert alert-danger">{error}</div>}
-          {success && <div className="alert alert-success">{success}</div>}
+          {error && (
+            <div className="alert alert-danger alert-dismissible fade show" role="alert">
+              <strong>Error:</strong> {error}
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setError("")}
+              ></button>
+            </div>
+          )}
+          {success && (
+            <div className="alert alert-success alert-dismissible fade show" role="alert">
+              <strong>Success:</strong> {success}
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setSuccess("")}
+              ></button>
+            </div>
+          )}
 
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h6 className="mb-0">Ward List</h6>
+            <h6 className="mb-0">📋 Ward List</h6>
             <button
               className="btn btn-primary d-flex align-items-center"
               onClick={() => {
@@ -140,7 +156,7 @@ export default function WardPage() {
                 <div className="card shadow" style={{ minWidth: 420 }}>
                   <div className="card-body">
                     <div className="d-flex justify-content-between align-items-center mb-2">
-                      <h6 className="mb-0">{editing ? 'Edit Ward' : 'Add New Ward'}</h6>
+                      <h6 className="mb-0">{editing ? '✏️ Edit Ward' : '➕ Add New Ward'}</h6>
                       <button
                         type="button"
                         className="btn-close"
@@ -153,7 +169,6 @@ export default function WardPage() {
                     <WardForm
                       onSubmit={async (data) => {
                         await handleSave(data);
-                        setShowForm(false);
                       }}
                       initialData={editing}
                       onCancel={() => {
@@ -175,6 +190,8 @@ export default function WardPage() {
                 <span className="visually-hidden">Loading...</span>
               </div>
             </div>
+          ) : items.length === 0 ? (
+            <div className="alert alert-info">No wards found. Create one to get started!</div>
           ) : (
             <WardList items={items} onEdit={handleEdit} onDelete={handleDelete} />
           )}

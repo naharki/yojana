@@ -20,8 +20,8 @@ export default function WardList({ items, onEdit, onDelete }) {
         <thead className="table-light">
           <tr>
             <th style={{ width: '5%' }}>S.N</th>
-            <th style={{ width: '55%' }}>Name</th>
-            <th style={{ width: '25%' }}>Code</th>
+            <th style={{ width: '55%' }}>Ward Number</th>
+            <th style={{ width: '25%' }}>Location</th>
             <th style={{ width: '15%' }}>Action</th>
           </tr>
         </thead>
@@ -31,9 +31,9 @@ export default function WardList({ items, onEdit, onDelete }) {
               <td>
                 <strong>{index + 1}</strong>
               </td>
-              <td>{it.name}</td>
+              <td>{it.number}</td>
               <td>
-                <span className="badge bg-secondary">{it.code}</span>
+                <span className="badge bg-secondary">{it.ward_location}</span>
               </td>
               <td>
                 <div style={{ position: 'relative', display: 'inline-block' }}>
