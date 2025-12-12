@@ -5,7 +5,6 @@ import { Edit2, Trash2, MoreHorizontal } from 'lucide-react';
 
 export default function CommitteeTypeList({ types, onEdit, onDelete }) {
   const [openId, setOpenId] = useState(null);
-
   if (!types || types.length === 0) {
     return (
       <div className="alert alert-info">
@@ -19,11 +18,11 @@ export default function CommitteeTypeList({ types, onEdit, onDelete }) {
       <table className="table table-hover table-striped">
         <thead className="table-light">
           <tr>
-            <th style={{ width: '5%' }}>S.N</th>
-            <th style={{ width: '30%' }}>Type</th>
-            <th style={{ width: '30%' }}>Type in English</th>
-            <th style={{ width: '20%' }}>Code</th>
-            <th style={{ width: '15%' }}>Action</th>
+            <th style={{ width: '5%' }}>क्र.स</th>
+            <th style={{ width: '30%' }}>नाम</th>
+            <th style={{ width: '30%' }}>अंग्रेजी नाम</th>
+            <th style={{ width: '20%' }}>कोड</th>
+            <th style={{ width: '15%' }}>कार्य</th>
           </tr>
         </thead>
         <tbody>
@@ -33,9 +32,9 @@ export default function CommitteeTypeList({ types, onEdit, onDelete }) {
                 <strong>{index + 1}</strong>
               </td>
               <td>{type.name}</td>
-              <td>{type.name_eng}</td>
+              <td>{type.eng_name}</td>
               <td>
-                <span className="badge bg-secondary">{type.committee_type_code}</span>
+                <span className="badge bg-secondary">{type.code}</span>
               </td>
               <td>
                 <div style={{ position: 'relative', display: 'inline-block' }}>

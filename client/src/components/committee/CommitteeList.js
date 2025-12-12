@@ -5,6 +5,7 @@ import { Edit2, Trash2, MoreHorizontal, Users, FileText, CreditCard, Lock } from
 
 export default function CommitteeList({ items, onEdit, onDelete, onAction }) {
   const [openId, setOpenId] = useState(null);
+  console.log('CommitteeList items:', items);
 
   if (!items || items.length === 0) {
     return (
@@ -15,28 +16,28 @@ export default function CommitteeList({ items, onEdit, onDelete, onAction }) {
   }
 
   return (
-    <div className="table-responsive">
+    <div className="table-responsive" style={{ height: "57vh" }}>
       <table className="table table-hover table-striped">
         <thead className="table-light">
           <tr>
-            <th style={{ width: '5%' }}>S.N</th>
-            <th style={{ width: '15%' }}>Reg.No</th>
-            <th style={{ width: '25%' }}>Committee Name</th>
-            <th style={{ width: '15%' }}>Committee Type</th>
-            <th style={{ width: '20%' }}>Address</th>
-            <th style={{ width: '10%' }}>Formation Date</th>
-            <th style={{ width: '10%' }}>Action</th>
+            <th style={{ width: '5%' }}>क्र.स</th>
+            <th style={{ width: '15%' }}>दर्ता नं.</th>
+            <th style={{ width: '25%' }}>समितिको नाम</th>
+            <th style={{ width: '15%' }}>समितिको प्रकार</th>
+            <th style={{ width: '20%' }}>ठेगाना</th>
+            <th style={{ width: '10%' }}>गठन मिति</th>
+            <th style={{ width: '10%' }}>कार्य</th>
           </tr>
         </thead>
         <tbody>
           {items.map((it, index) => (
             <tr key={it.id} style={{ position: 'relative' }}>
               <td><strong>{index + 1}</strong></td>
-              <td>{it.reg_no}</td>
+              <td>{it.register_number}</td>
               <td>{it.name}</td>
-              <td>{it.committee_type}</td>
+              <td>{it.committeeType?.name}</td>
               <td>{it.address}</td>
-              <td>{it.formation_date}</td>
+              <td>{it.created_date}</td>
               <td>
                 <div style={{ position: 'relative', display: 'inline-block' }}>
                   <button className="btn btn-sm btn-outline-secondary" onClick={() => setOpenId(openId === it.id ? null : it.id)} title="Actions">

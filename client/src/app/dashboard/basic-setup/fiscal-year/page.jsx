@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import FiscalYearForm from "@/components/fiscal-year/FiscalYearForm";
-import FiscalYearList from "@/components/fiscal-year/FiscalYearList";
 import { PlusCircle } from 'lucide-react';
+import FiscalYearList from "@/components/fiscal-year/FiscalYearList";
+import FiscalYearForm from "@/components/fiscal-year/FiscalYearForm";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -20,7 +20,19 @@ export default function FiscalYearPage() {
     fetchItems();
   }, []);
 
-  // Close on Escape
+  const fetchItems = async () => {
+    try {
+      setLoading(true);
+      const resp = await axios.get(API_URL + "/fiscalyears/");
+      setItems(resp.data.data || resp.data);
+    } catch (err) {
+      console.error("Error fetching Fiscal Years:", err);
+      setError("Failed to load Fiscal Years");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') {
@@ -32,31 +44,15 @@ export default function FiscalYearPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [showForm]);
 
-  const fetchItems = async () => {
-    try {
-      setLoading(true);
-      const resp = await axios.get(API_URL + "/fiscalyears/");
-      // API returns { success, count, data: [...] }
-      setItems(resp.data.data || []);
-    } catch (err) {
-      console.error("Error fetching fiscal years:", err);
-      setError("Failed to load fiscal years");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSave = async (data) => {
     try {
       setError("");
       if (editing) {
-        // PUT request for update
         await axios.put(API_URL + `/fiscalyears/${editing.id}/`, data);
-        setSuccess("Fiscal year updated successfully");
+        setSuccess("fiscal year updated successfully");
       } else {
-        // POST request for create
         await axios.post(API_URL + "/fiscalyears/", data);
-        setSuccess("Fiscal year created successfully");
+        setSuccess("fiscal year created successfully");
       }
       await fetchItems();
       setShowForm(false);
@@ -64,7 +60,6 @@ export default function FiscalYearPage() {
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       console.error("Error saving fiscal year:", err);
-      // Handle validation errors from API
       if (err.response?.data) {
         const errorData = err.response.data;
         if (typeof errorData === 'object') {
@@ -91,7 +86,7 @@ export default function FiscalYearPage() {
     if (!confirm("Are you sure you want to delete this fiscal year?")) return;
     try {
       await axios.delete(API_URL + `/fiscalyears/${id}/`);
-      setSuccess("Fiscal year deleted successfully");
+      setSuccess("fiscal year deleted successfully");
       await fetchItems();
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
@@ -104,7 +99,7 @@ export default function FiscalYearPage() {
     <div className="p-4">
       <div className="card shadow-sm">
         <div className="card-header bg-light border-bottom">
-          <h5 className="mb-0">📅 Fiscal Year Management</h5>
+          <h5 className="mb-0">🏘️ fiscal year Management</h5>
         </div>
         <div className="card-body">
           {error && (
@@ -129,7 +124,7 @@ export default function FiscalYearPage() {
           )}
 
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h6 className="mb-0">Fiscal Years</h6>
+            <h6 className="mb-0">📋 fiscal year List</h6>
             <button
               className="btn btn-primary d-flex align-items-center"
               onClick={() => {
@@ -137,7 +132,7 @@ export default function FiscalYearPage() {
                 setShowForm(true);
               }}
             >
-              <PlusCircle size={18} className="me-2" /> Add Fiscal Year
+              <PlusCircle size={18} className="me-2" /> Add fiscal year
             </button>
           </div>
 
@@ -161,7 +156,7 @@ export default function FiscalYearPage() {
                 <div className="card shadow" style={{ minWidth: 420 }}>
                   <div className="card-body">
                     <div className="d-flex justify-content-between align-items-center mb-2">
-                      <h6 className="mb-0">{editing ? '✏️ Edit Fiscal Year' : '➕ Add New Fiscal Year'}</h6>
+                      <h6 className="mb-0">{editing ? '✏️ Edit fiscal year' : '➕ Add New fiscal year'}</h6>
                       <button
                         type="button"
                         className="btn-close"
@@ -189,7 +184,6 @@ export default function FiscalYearPage() {
 
           <hr />
 
-          <h6 className="mb-3">📊 Fiscal Years List</h6>
           {loading ? (
             <div className="text-center">
               <div className="spinner-border" role="status">
@@ -197,7 +191,7 @@ export default function FiscalYearPage() {
               </div>
             </div>
           ) : items.length === 0 ? (
-            <div className="alert alert-info">No fiscal years found. Create one to get started!</div>
+            <div className="alert alert-info">No fiscalyears found. Create one to get started!</div>
           ) : (
             <FiscalYearList items={items} onEdit={handleEdit} onDelete={handleDelete} />
           )}

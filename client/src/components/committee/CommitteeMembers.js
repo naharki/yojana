@@ -13,27 +13,22 @@ export default function CommitteeMembers({ committee, apiBase, onClose }) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
 
-  useEffect(() => { fetchMembers(); }, [committee]);
+  useEffect(() => {
+    if (committee?.id) fetchMembers();
+  }, [committee]);
 
   const fetchMembers = async () => {
     try {
       setLoading(true);
-      // use comments as dummy members
-      const resp = await axios.get((apiBase || '') + '/comments');
-      const mapped = resp.data.slice(0, 8).map((c) => ({
-        id: c.id,
-        position: 'Member',
-        full_name: c.name,
-        sex: 'M',
-        father_name: 'Unknown',
-        address: c.email,
-        mobile_no: '',
-        citizenship_no: '',
-        is_account_holder: false,
-        is_monitoring_committee: c.id % 3 === 0,
-      }));
-      setMembers(mapped.filter(m => !m.is_monitoring_committee));
-      setMonitoring(mapped.filter(m => m.is_monitoring_committee));
+      const resp = await axios.get(`${apiBase}/committees/${committee.id}/`);
+      const data = resp.data;
+
+      // Separate normal members and monitoring members
+      const normalMembers = (data.members || []).filter(m => !m.is_anugaman);
+      const monitoringMembers = (data.members || []).filter(m => m.is_anugaman);
+
+      setMembers(normalMembers);
+      setMonitoring(monitoringMembers);
     } catch (err) {
       console.error(err);
     } finally {
@@ -44,14 +39,15 @@ export default function CommitteeMembers({ committee, apiBase, onClose }) {
   const handleAddOrUpdate = async (data) => {
     try {
       if (editing) {
-        // dummy update
-        setMembers((prev) => prev.map(m => m.id === editing.id ? { ...m, ...data } : m));
-        setMonitoring((prev) => prev.map(m => m.id === editing.id ? { ...m, ...data } : m));
+        // Update locally
+        setMembers(prev => prev.map(m => m.id === editing.id ? { ...m, ...data } : m));
+        setMonitoring(prev => prev.map(m => m.id === editing.id ? { ...m, ...data } : m));
       } else {
-        // dummy create, assign id
+        // Add new member locally (you can replace with API POST)
         const newId = Date.now();
         const newItem = { id: newId, ...data };
-        if (newItem.is_monitoring_committee) setMonitoring(prev => [newItem, ...prev]); else setMembers(prev => [newItem, ...prev]);
+        if (newItem.is_anugaman) setMonitoring(prev => [newItem, ...prev]);
+        else setMembers(prev => [newItem, ...prev]);
       }
       setShowForm(false);
       setEditing(null);
@@ -81,32 +77,33 @@ export default function CommitteeMembers({ committee, apiBase, onClose }) {
         <div className="text-center py-3"><div className="spinner-border"/></div>
       ) : (
         <>
-          <div className="table-responsive mb-3">
+          {/* Normal Members */}
+          <div className="table-responsive mb-3  ">
             <table className="table table-hover table-striped">
               <thead className="table-light">
                 <tr>
-                  <th style={{ width: '5%' }}>S.N</th>
-                  <th style={{ width: '10%' }}>Position</th>
-                  <th style={{ width: '20%' }}>Full Name</th>
-                  <th style={{ width: '8%' }}>Sex</th>
-                  <th style={{ width: '15%' }}>Father Name</th>
-                  <th style={{ width: '15%' }}>Address</th>
-                  <th style={{ width: '10%' }}>Mobile No</th>
-                  <th style={{ width: '10%' }}>Citizenship No</th>
-                  <th style={{ width: '7%' }}>Action</th>
+                  <th>S.N</th>
+                  <th>Role</th>
+                  <th>Name</th>
+                  <th>Sex</th>
+                  <th>Father Name</th>
+                  <th>Address</th>
+                  <th>Mobile No</th>
+                  <th>Citizenship No</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {members.map((m, idx) => (
-                  <tr key={m.id} style={{ position: 'relative' }}>
-                    <td><strong>{idx + 1}</strong></td>
-                    <td>{m.position}</td>
-                    <td>{m.full_name}</td>
+                  <tr key={m.id}>
+                    <td>{idx + 1}</td>
+                    <td>{m.role}</td>
+                    <td>{m.name}</td>
                     <td>{m.sex}</td>
                     <td>{m.father_name}</td>
                     <td>{m.address}</td>
-                    <td>{m.mobile_no}</td>
-                    <td>{m.citizenship_no}</td>
+                    <td>{m.mobile_number}</td>
+                    <td>{m.citizenship_number}</td>
                     <td>
                       <div style={{ position: 'relative', display: 'inline-block' }}>
                         <button className="btn btn-sm btn-outline-secondary" onClick={() => setOpenMemberId(openMemberId === m.id ? null : m.id)}>
@@ -114,10 +111,10 @@ export default function CommitteeMembers({ committee, apiBase, onClose }) {
                         </button>
                         {openMemberId === m.id && (
                           <div className="card shadow-sm p-2" style={{ position: 'absolute', right: '110%', top: 0, minWidth: 140, zIndex: 2000 }}>
-                            <button className="btn btn-sm btn-light d-flex align-items-center w-100 mb-1" onClick={() => { setOpenMemberId(null); handleEdit(m); }}>
+                            <button className="btn btn-sm btn-light w-100 mb-1" onClick={() => { setOpenMemberId(null); handleEdit(m); }}>
                               <Edit2 size={14} className="me-2"/> Edit
                             </button>
-                            <button className="btn btn-sm btn-danger d-flex align-items-center w-100" onClick={() => { setOpenMemberId(null); handleDelete(m.id); }}>
+                            <button className="btn btn-sm btn-danger w-100" onClick={() => { setOpenMemberId(null); handleDelete(m.id); }}>
                               <Trash2 size={14} className="me-2"/> Delete
                             </button>
                           </div>
@@ -130,6 +127,7 @@ export default function CommitteeMembers({ committee, apiBase, onClose }) {
             </table>
           </div>
 
+          {/* Monitoring Members */}
           {monitoring.length > 0 && (
             <div className="mb-4">
               <h6 className="mb-2">Monitoring Committee Members</h6>
@@ -137,21 +135,21 @@ export default function CommitteeMembers({ committee, apiBase, onClose }) {
                 <table className="table table-sm table-bordered">
                   <thead className="table-light">
                     <tr>
-                      <th style={{ width: '5%' }}>S.N</th>
-                      <th style={{ width: '20%' }}>Full Name</th>
-                      <th style={{ width: '15%' }}>Position</th>
-                      <th style={{ width: '15%' }}>Mobile No</th>
-                      <th style={{ width: '15%' }}>Address</th>
-                      <th style={{ width: '10%' }}>Action</th>
+                      <th>S.N</th>
+                      <th>Name</th>
+                      <th>Role</th>
+                      <th>Mobile</th>
+                      <th>Address</th>
+                      <th>Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {monitoring.map((m, idx) => (
                       <tr key={m.id}>
-                        <td><strong>{idx + 1}</strong></td>
-                        <td>{m.full_name}</td>
-                        <td>{m.position}</td>
-                        <td>{m.mobile_no}</td>
+                        <td>{idx + 1}</td>
+                        <td>{m.name}</td>
+                        <td>{m.role}</td>
+                        <td>{m.mobile_number}</td>
                         <td>{m.address}</td>
                         <td>
                           <div style={{ position: 'relative', display: 'inline-block' }}>
@@ -160,10 +158,10 @@ export default function CommitteeMembers({ committee, apiBase, onClose }) {
                             </button>
                             {openMemberId === m.id && (
                               <div className="card shadow-sm p-2" style={{ position: 'absolute', right: '110%', top: 0, minWidth: 140, zIndex: 2000 }}>
-                                <button className="btn btn-sm btn-light d-flex align-items-center w-100 mb-1" onClick={() => { setOpenMemberId(null); handleEdit(m); }}>
+                                <button className="btn btn-sm btn-light w-100 mb-1" onClick={() => { setOpenMemberId(null); handleEdit(m); }}>
                                   <Edit2 size={14} className="me-2"/> Edit
                                 </button>
-                                <button className="btn btn-sm btn-danger d-flex align-items-center w-100" onClick={() => { setOpenMemberId(null); handleDelete(m.id); }}>
+                                <button className="btn btn-sm btn-danger w-100" onClick={() => { setOpenMemberId(null); handleDelete(m.id); }}>
                                   <Trash2 size={14} className="me-2"/> Delete
                                 </button>
                               </div>
@@ -180,7 +178,7 @@ export default function CommitteeMembers({ committee, apiBase, onClose }) {
         </>
       )}
 
-      {/* popup form */}
+      {/* Member Form Popup */}
       {showForm && (
         <div>
           <div className="position-fixed top-0 start-0 w-100 h-100" style={{ background: 'rgba(0,0,0,0.35)', zIndex: 2990 }} onClick={() => { setShowForm(false); setEditing(null); }} aria-hidden />
@@ -191,7 +189,7 @@ export default function CommitteeMembers({ committee, apiBase, onClose }) {
                   <h6 className="mb-0">{editing ? 'Edit Member' : 'Add Member'}</h6>
                   <button type="button" className="btn-close" onClick={() => { setShowForm(false); setEditing(null); }} />
                 </div>
-                <MemberForm initialData={editing} onSubmit={async (d) => { await handleAddOrUpdate(d); }} onCancel={() => { setShowForm(false); setEditing(null); }} />
+                <MemberForm initialData={editing} onSubmit={handleAddOrUpdate} onCancel={() => { setShowForm(false); setEditing(null); }} />
               </div>
             </div>
           </div>

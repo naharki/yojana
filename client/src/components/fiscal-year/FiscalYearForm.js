@@ -5,7 +5,11 @@ import { useState, useEffect } from 'react';
 export default function FiscalYearForm({ onSubmit, initialData = null, onCancel = null }) {
   const [formData, setFormData] = useState(
     initialData || {
-      fiscal_year: '',
+      name : '',
+      eng_name : '',
+      code: '',
+      start_year: '',
+      end_year: '',
       start_date: '',
       end_date: '',
     }
@@ -23,7 +27,7 @@ export default function FiscalYearForm({ onSubmit, initialData = null, onCancel 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.fiscal_year.trim()) {
+    if (!formData.name.trim()) {
       alert('Fiscal year is required');
       return;
     }
@@ -39,12 +43,16 @@ export default function FiscalYearForm({ onSubmit, initialData = null, onCancel 
     try {
       setLoading(true);
       await onSubmit({
-        fiscal_year: formData.fiscal_year.trim(),
+        name: formData.name.trim(),
+        eng_name: formData.eng_name,
+        code: formData.code,
+        start_year: formData.start_year,
+        end_year: formData.end_year,
         start_date: formData.start_date,
         end_date: formData.end_date,
       });
       if (!initialData) {
-        setFormData({ fiscal_year: '', start_date: '', end_date: '' });
+        setFormData({ name: '', eng_name : '', code: '', start_year: '', end_year: '', start_date: '', end_date: '' });
       }
     } catch (err) {
       console.error('FiscalYearForm submit error', err);
@@ -59,15 +67,56 @@ export default function FiscalYearForm({ onSubmit, initialData = null, onCancel 
         <div className="col-md-6 mb-3">
           <label className="form-label">Fiscal Year</label>
           <input
-            name="fiscal_year"
+            name="name"
             className="form-control"
-            value={formData.fiscal_year}
+            value={formData.name}
             onChange={handleChange}
             placeholder="e.g., 2024/2025"
             required
           />
         </div>
+        <div className="col-md-6 mb-3">
+          <label className="form-label">Fiscal Year (English)</label>
+          <input
+            name="eng_name"
+            className="form-control"
+            value={formData.eng_name}
+            onChange={handleChange}
+            placeholder="e.g., 2024/2025"
+          />
+        </div>
+        <div className="col-md-6 mb-3">
+          <label className="form-label">Code</label>
+          <input name='code'
+            className="form-control"
+            value={formData.code}
+            onChange={handleChange}
+            placeholder="e.g., FY2024"
+          />
+        </div>
         <div className="col-md-3 mb-3">
+          <label className="form-label">Start Year</label>
+          <input 
+            name="start_year"
+            type="number"
+            className="form-control"
+            value={formData.start_year}
+            onChange={handleChange}
+            placeholder="e.g., 2024"
+          />
+        </div>
+        <div className="col-md-3 mb-3">
+          <label className="form-label">End Year</label>
+          <input 
+            name="end_year"
+            type="number"
+            className="form-control"
+            value={formData.end_year}
+            onChange={handleChange}
+            placeholder="e.g., 2025"
+          />
+        </div>
+        <div className='col-md-3 mb-3'>
           <label className="form-label">Start Date</label>
           <input
             name="start_date"
@@ -90,7 +139,7 @@ export default function FiscalYearForm({ onSubmit, initialData = null, onCancel 
           />
         </div>
       </div>
-
+      
       <button type="submit" className="btn btn-primary" disabled={loading}>
         {loading ? 'Saving...' : initialData ? 'Update Fiscal Year' : 'Add Fiscal Year'}
       </button>

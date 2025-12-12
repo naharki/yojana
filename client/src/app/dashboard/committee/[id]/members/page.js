@@ -7,12 +7,11 @@ import dynamic from 'next/dynamic';
 
 const CommitteeMembers = dynamic(() => import('@/components/committee/CommitteeMembers'), { ssr: false });
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://jsonplaceholder.typicode.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function CommitteeMembersPage() {
-  const params = useParams();
+  const { id } = useParams() || {};
   const router = useRouter();
-  const { id } = params || {};
   const [committee, setCommittee] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -24,16 +23,25 @@ export default function CommitteeMembersPage() {
   const fetchCommittee = async () => {
     try {
       setLoading(true);
-      const resp = await axios.get(`${API_URL}/posts/${id}`);
-      const p = resp.data;
+      // Fetch the committee including members
+      const resp = await axios.get(`${API_URL}/committees/${id}/`); 
+      const data = resp.data;
+      if(resp.status == 200) {
+        const get_gender_stat= await axios.get(`${API_URL}/committees/${id}/gender-stats/`);
+        console.log("gender stats", get_gender_stat.data);
+      }
+
+      // Map committee data to your frontend format
       const mapped = {
-        id: p.id,
-        reg_no: `REG-${String(p.id).padStart(3,'0')}`,
-        name: p.title ? p.title.slice(0,40) : `Committee ${p.id}`,
-        committee_type: p.userId ? `Type ${p.userId}` : 'General',
-        address: p.body ? p.body.slice(0,40) : 'Unknown',
-        formation_date: `${2020 + (p.id % 5)}-01-15`,
+        id: data.id,
+        reg_no: data.register_number ? data.register_number : `REG-${String(data.id).padStart(3,'0')}`,
+        name: data.name,
+        committee_type: data.committeeType?.name || 'General',
+        address: data.address || 'Unknown',
+        formation_date: data.created_date || '',
+        members: data.members || [],  // include nested members
       };
+
       setCommittee(mapped);
     } catch (err) {
       console.error(err);
@@ -56,7 +64,11 @@ export default function CommitteeMembersPage() {
             <div className="text-center"><div className="spinner-border" role="status"/></div>
           ) : (
             committee ? (
-              <CommitteeMembers committee={committee} apiBase={process.env.NEXT_PUBLIC_API_URL || 'https://jsonplaceholder.typicode.com'} onClose={() => router.push('/dashboard/committee/list')} />
+              <CommitteeMembers 
+                committee={committee} 
+                apiBase={API_URL} 
+                onClose={() => router.push('/dashboard/committee/list')} 
+              />
             ) : (
               <div className="alert alert-info">Committee not found</div>
             )

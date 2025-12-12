@@ -8,8 +8,7 @@ import CommitteeList from '@/components/committee/CommitteeList';
 // Members are shown on a dedicated nested route: /dashboard/committee/[id]/members
 import { PlusCircle } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://jsonplaceholder.typicode.com';
-const USING_DUMMY = !process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 function mapToCommittee(p) {
   return {
@@ -35,8 +34,9 @@ export default function CommitteeListPage() {
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const resp = await axios.get(API_URL + '/posts');
-      setItems(resp.data.slice(0,10).map(mapToCommittee));
+      const resp = await axios.get(API_URL + '/committees/');
+      setItems(resp.data);
+      
     } catch (err) {
       console.error(err);
       setError('Failed to load committees');
@@ -47,15 +47,15 @@ export default function CommitteeListPage() {
     try {
       setError('');
       if (editing) {
-        await axios.put(API_URL + `/posts/${editing.id}`, data);
+        await axios.put(API_URL + `/committees/${editing.id}`, data);
         setItems((prev) => prev.map((it) => it.id === editing.id ? { ...it, ...data } : it));
-        setSuccess('Committee updated (dummy API)');
+        setSuccess('Committee updated');
       } else {
-        const resp = await axios.post(API_URL + '/posts', data);
+        const resp = await axios.post(API_URL + '/committees', data);
         const newId = resp.data.id || Date.now();
         const newItem = { id: newId, ...data };
         setItems((prev) => [newItem, ...prev]);
-        setSuccess('Committee created (dummy API)');
+        setSuccess('Committee created');
       }
       if (!USING_DUMMY) await fetchItems();
       setShowForm(false);
@@ -71,9 +71,9 @@ export default function CommitteeListPage() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(API_URL + `/posts/${id}`);
+      await axios.delete(API_URL + `/committees/${id}`);
       setItems((prev) => prev.filter((i) => i.id !== id));
-      setSuccess('Committee deleted (dummy API)');
+      setSuccess('Committee deleted');
       if (!USING_DUMMY) await fetchItems();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
