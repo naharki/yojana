@@ -3,9 +3,17 @@
 import { useState, useEffect } from 'react';
 
 export default function MemberForm({ onSubmit, initialData = null, onCancel = null }) {
+  const ROLE_OPTIONS = [
+  { value: 'adhyaksha', label: 'अध्यक्ष' },
+  { value: 'upadhyaksha', label: 'उपाध्यक्ष' },
+  { value: 'sachiv', label: 'सचिव' },
+  { value: 'kosadhyaksha', label: 'कोषाध्यक्ष' },
+  { value: 'sadasya', label: 'सदस्य' },
+];
+
   const [formData, setFormData] = useState(
     initialData || {
-      position: '',
+      designation: '',
       full_name: '',
       sex: 'M',
       father_name: '',
@@ -34,7 +42,7 @@ export default function MemberForm({ onSubmit, initialData = null, onCancel = nu
       setLoading(true);
       await onSubmit(formData);
       if (!initialData) {
-        setFormData({ position: '', full_name: '', sex: 'M', father_name: '', address: '', mobile_no: '', citizenship_no: '', is_account_holder: false, is_monitoring_committee: false });
+        setFormData({ designation: '', full_name: '', sex: 'M', father_name: '', address: '', mobile_no: '', citizenship_no: '', is_account_holder: false, is_monitoring_committee: false });
       }
     } catch (err) {
       console.error('MemberForm submit error', err);
@@ -46,13 +54,18 @@ export default function MemberForm({ onSubmit, initialData = null, onCancel = nu
   return (
     <form onSubmit={handleSubmit} className="mb-3">
       <div className="row">
-        <div className="col-md-4 mb-3">
-          <label className="form-label">Position</label>
-          <input name="position" className="form-control" value={formData.position} onChange={handleChange} placeholder="e.g., Chairperson" />
-        </div>
         <div className="col-md-8 mb-3">
-          <label className="form-label">Full Name</label>
+          <label className="form-label">नाम/थर</label>
           <input name="full_name" className="form-control" value={formData.full_name} onChange={handleChange} placeholder="Full name" required />
+        </div>
+        <div className="col-md-3 mb-3">
+          <label className="form-label">पद</label>
+          <select name="designation" className="form-select" value={formData.designation} onChange={handleChange}>
+            <option>छान्नुहोस्</option>
+            {ROLE_OPTIONS.map((role) => (
+              <option key={role.value} value={role.value}>{role.label}</option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -62,7 +75,6 @@ export default function MemberForm({ onSubmit, initialData = null, onCancel = nu
           <select name="sex" className="form-select" value={formData.sex} onChange={handleChange}>
             <option value="M">Male</option>
             <option value="F">Female</option>
-            <option value="O">Other</option>
           </select>
         </div>
         <div className="col-md-5 mb-3">

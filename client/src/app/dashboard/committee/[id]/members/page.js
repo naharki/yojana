@@ -15,12 +15,14 @@ export default function CommitteeMembersPage() {
   const [committee, setCommittee] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [gender_stats, setGenderStats] = useState(null);
 
   useEffect(() => {
     if (id) fetchCommittee();
   }, [id]);
 
   const fetchCommittee = async () => {
+    
     try {
       setLoading(true);
       // Fetch the committee including members
@@ -28,7 +30,8 @@ export default function CommitteeMembersPage() {
       const data = resp.data;
       if(resp.status == 200) {
         const get_gender_stat= await axios.get(`${API_URL}/committees/${id}/gender-stats/`);
-        console.log("gender stats", get_gender_stat.data);
+        console.log("gender stats", get_gender_stat.data.male_count);
+        setGenderStats(get_gender_stat.data)
       }
 
       // Map committee data to your frontend format
@@ -66,6 +69,7 @@ export default function CommitteeMembersPage() {
             committee ? (
               <CommitteeMembers 
                 committee={committee} 
+                gender_stats={gender_stats}
                 apiBase={API_URL} 
                 onClose={() => router.push('/dashboard/committee/list')} 
               />

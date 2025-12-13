@@ -55,7 +55,6 @@ class Member(models.Model):
         ('sachiv', 'सचिव'),
         ('kosadhyaksha', 'कोषाध्यक्ष'),
         ('sadasya', 'सदस्य'),
-        ('anugaman', 'अनुगमन समिति'),
     ]
 
     # Priority mapping for auto-ordering
@@ -64,9 +63,7 @@ class Member(models.Model):
         "upadhyaksha": 2,
         "sachiv": 3,
         "kosadhyaksha": 4,
-        "anugaman": 5,
-        "sadasya": 6,
-        "other": 7,
+        "sadasya": 5,
     }
 
     name = models.CharField(max_length=200)
@@ -97,6 +94,10 @@ class Member(models.Model):
     is_account_holder = models.BooleanField(
         default=False,
         help_text="Is this member an account holder?"
+    )
+    is_monitoring_committee_member = models.BooleanField(
+        default=False,
+        help_text="Is this member in monitoring committee?"
     )
     role_priority = models.PositiveIntegerField(default=99)
     created_at = models.DateTimeField(auto_now_add=True)
