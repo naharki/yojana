@@ -1,50 +1,58 @@
-"use client";
-
+'use client';
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { Edit2, Trash2, MoreHorizontal, X } from "lucide-react";
 
-export default function DataTable() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+export default function DataTable({ members }) {
+  const [committeeMembers, setCommitteeMembers] = useState([]);
+  const [openId, setOpenId] = useState(null);
+  const [editingMember, setEditingMember] = useState(null);
 
+  // Initialize local state from props
   useEffect(() => {
-    // Dummy API (can replace with your Django API later)
-    axios
-      .get("https://jsonplaceholder.typicode.com/users")
-      .then((res) => {
-        setData(res.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError("Failed to fetch data");
-        setLoading(false);
-      });
-  }, []);
+    if (members?.length) {
+      setCommitteeMembers(
+        members.filter((m) => !m.is_monitoring_committee_member)
+      );
+    } else {
+      setCommitteeMembers([]);
+    }
+  }, [members]);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p className="text-danger">{error}</p>;
+  if (!committeeMembers.length) {
+    return (
+      <div className="alert alert-info">
+        <p className="mb-0">No member data available.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="table-responsive">
-      <table className="table table-bordered">
-        <thead className="table-">
+    <div style={{ maxHeight: "57vh", overflowY: "auto", position: "relative" }}>
+      <table className="table table-hover table-striped table-bordered">
+        <thead className="table-light">
           <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>City</th>
+            <th>क्र.स</th>
+            <th>पद</th>
+            <th>नाम</th>
+            <th>लिङ्ग</th>
+            <th>बुवाको नाम</th>
+            <th>ठेगाना</th>
+            <th>मोबाइल नं</th>
+            <th>नागरिकता नं</th>
+            
           </tr>
         </thead>
         <tbody>
-          {data.map((user) => (
+          {committeeMembers.map((user, i) => (
             <tr key={user.id}>
-              <td>{user.id}</td>
+              <td><strong>{i + 1}</strong></td>
+              <td>{user.designation}</td>
               <td>{user.name}</td>
-              <td>{user.username}</td>
-              <td>{user.email}</td>
-              <td>{user.address.city}</td>
+              <td>{user.sex_display}</td>
+              <td>{user.father_name}</td>
+              <td>{user.address}</td>
+              <td>{user.mobile_number}</td>
+              <td>{user.citizenship_number}</td>
             </tr>
           ))}
         </tbody>

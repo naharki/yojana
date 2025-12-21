@@ -9,21 +9,22 @@ import DataTable from "@/components/certificate/certificate_table";
 import SignatureCao from "@/components/certificate/signature";
 import CertificateEditor from '@/components/certificate/CertificateEditor';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://jsonplaceholder.typicode.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function PrintPage() {
   const params = useParams();
   const committeeId = params?.id;
   const printRef = useRef();
   const [initialData, setInitialData] = useState(null);
+  const [members, setMembers] = useState([]);
 
   useEffect(() => {
     if (!committeeId) return;
-    // fetch dummy certificate data (map from post)
     (async () => {
       try {
-        const resp = await axios.get(API_URL + `/posts/${committeeId}`);
+        const resp = await axios.get(API_URL + `/committees/${committeeId}`);
         const data = resp.data || {};
+        setMembers(data.members || []);
         const initial = {
           field1: new Date().toLocaleDateString(),
           field2: data.title || `Certificate for Committee ${committeeId}`,
@@ -40,7 +41,6 @@ export default function PrintPage() {
   }, [committeeId]);
 
   const handlePrint = useReactToPrint({
-    // Provide both `content` callback and `contentRef` for compatibility
     content: () => printRef.current,
     contentRef: printRef,
     documentTitle: "Certificate",
@@ -50,8 +50,6 @@ export default function PrintPage() {
     <div className="container mt-5">
 
       <h2 className="mb-3">Print Example Page</h2>
-
-      {/* Print Button */}
       <button 
         className="btn btn-primary mb-4 d-print-none"
         onClick={handlePrint}
@@ -61,24 +59,15 @@ export default function PrintPage() {
 
       {/* PRINTABLE AREA */}
       <div ref={printRef} className="border rounded p-4 print-area no-print-border">
-
-        {/* HEADER COMPONENT */}
         <Header />
-
-        {/* CONTENT BELOW HEADER */}
         <h3 className="text-center mb-3">Predefined Data</h3>
-
-        {/* Certificate editor shows three editable rows and an editable justified content area */}
         <CertificateEditor committeeId={committeeId} initialData={initialData} />
-
-        <DataTable/>
-
+        <DataTable members= {members}/>
         <div className="mt-4">
          <SignatureCao />
         </div>
       </div>
 
-      {/* print styles: hide chrome and remove borders when printing */}
       <style>{`
         @media print {
           .d-print-none { display: none !important; }

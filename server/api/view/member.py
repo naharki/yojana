@@ -1,36 +1,57 @@
-from rest_framework import serializers, viewsets, status
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 from ..model.committee import Member
 from ..serializers.memberserializer import MemberSerializer
 
+
 class MemberViewSet(viewsets.ModelViewSet):
-    queryset = Member.objects.all()
     serializer_class = MemberSerializer
 
+    # ✅ 1. Handle list (nested + global)
+    def get_queryset(self):
+        committee_id = self.kwargs.get("committee_pk")
+
+        if committee_id:
+            return Member.objects.filter(committee_id=committee_id)
+
+        return Member.objects.all()
+
+    # ✅ 2. Handle create (auto-attach committee when nested)
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+
+        committee_id = self.kwargs.get("committee_pk")
+
+        if committee_id:
+            serializer.save(committee_id=committee_id)
+        else:
+            serializer.save()
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    # ✅ 3. Update (PUT / PATCH)
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
+        partial = kwargs.pop("partial", False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+
+        serializer = self.get_serializer(
+            instance,
+            data=request.data,
+            partial=partial
+        )
         serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
+        serializer.save()
+
         return Response(serializer.data)
 
+    # ✅ 4. Delete
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        self.perform_destroy(instance)
+        instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
+    # ✅ 5. Retrieve single member
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)

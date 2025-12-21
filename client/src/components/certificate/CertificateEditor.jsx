@@ -1,117 +1,168 @@
+'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import CertificateHeader from './CertificateHeader';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://jsonplaceholder.typicode.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-// Simple certificate editor allowing three predefined fields and a justified editable content area.
 export default function CertificateEditor({ committeeId, initialData }) {
-  const defaultTemplate = `This is to certify that {{subject}} was inspected on {{issue_date}}. The certificate pertains to {{extra}}. Please keep this document for future reference.`;
+  const defaultTemplate =
+    'This is to certify that {{subject}} was inspected on {{issue_date}}. ' +
+    'The certificate pertains to {{extra}}. Please keep this document for future reference.';
+  const [issueDate, setIssueDate] = useState(initialData?.issue_date || '');
+  const [subject, setSubject] = useState(initialData?.subject || '');
+  const [extra, setExtra] = useState(initialData?.extra || '');
+  const [content, setContent] = useState(
+    initialData?.content ||
+      defaultTemplate
+        .replace(/{{\s*issue_date\s*}}/g, initialData?.issue_date || '')
+        .replace(/{{\s*subject\s*}}/g, initialData?.subject || '')
+        .replace(/{{\s*extra\s*}}/g, initialData?.extra || '')
+  );
 
-  const [field1, setField1] = useState(initialData?.field1 || new Date().toLocaleDateString());
-  const [field2, setField2] = useState(initialData?.field2 || 'Certificate Subject');
-  const [field3, setField3] = useState(initialData?.field3 || 'Additional Info');
-  const [content, setContent] = useState(initialData?.content || defaultTemplate.replace(/{{\s*issue_date\s*}}/g, initialData?.field1 || new Date().toLocaleDateString()).replace(/{{\s*subject\s*}}/g, initialData?.field2 || 'Certificate Subject').replace(/{{\s*extra\s*}}/g, initialData?.field3 || 'Additional Info'));
-  const [editing, setEditing] = useState(false);
+  // --------------------
+  // UI state
+  // --------------------
   const [saving, setSaving] = useState(false);
-  const [savedAt, setSavedAt] = useState(initialData?.savedAt || null);
-  const editableRef = useRef(null);
+  const [savedAt, setSavedAt] = useState(initialData?.saved_at || null);
+  const textareaRef = useRef(null);
 
+  // --------------------
+  // Keep tokens updated
+  // --------------------
   useEffect(() => {
-    // Replace tokens in content when fields change. Preserve other user edits by replacing tokens only.
     setContent((prev) => {
       let next = prev || defaultTemplate;
-      next = next.replace(/{{\s*issue_date\s*}}/g, field1);
-      next = next.replace(/{{\s*subject\s*}}/g, field2);
-      next = next.replace(/{{\s*extra\s*}}/g, field3);
+      next = next.replace(/{{\s*issue_date\s*}}/g, issueDate);
+      next = next.replace(/{{\s*subject\s*}}/g, subject);
+      next = next.replace(/{{\s*extra\s*}}/g, extra);
       return next;
     });
-  }, [field1, field2, field3]);
+  }, [issueDate, subject, extra]);
 
-  const handleContentChange = () => {
-    if (!editableRef.current) return;
-    setContent(editableRef.current.innerText);
-  };
-
+  // --------------------
+  // Save to real API
+  // --------------------
   const handleSave = async () => {
+    if (!issueDate) {
+      alert('Issue Date is required');
+      return;
+    }
+
     setSaving(true);
     try {
-      // Send to dummy API to simulate persistence. We'll POST to /posts with committeeId and certificate payload.
       const payload = {
-        committeeId,
-        title: field2,
-        body: content,
-        meta: { field1, field2, field3 },
+        issue_date: issueDate,
+        subject,
+        extra,
+        content,
       };
-      const resp = await axios.post(API_URL + '/posts', payload);
+
+      const url = `${API_URL}/committees/${committeeId}/certificate/`;
+
+      if (initialData) {
+        // Update existing certificate
+        await axios.put(url, payload);
+      } else {
+        // Create new certificate
+        await axios.post(url, payload);
+      }
+
       setSavedAt(new Date().toISOString());
-      setEditing(false);
-      // note: jsonplaceholder returns id but does not persist — we keep local state.
-    } catch (err) {
-      console.error('Failed to save certificate', err);
-      alert('Failed to save certificate (dummy API)');
+      alert('Certificate saved successfully');
+    } catch (error) {
+      console.error('Certificate save failed:', error);
+      alert('Failed to save certificate');
     } finally {
       setSaving(false);
     }
   };
 
+  // --------------------
+  // Reset editor
+  // --------------------
   const handleCancel = () => {
-    // revert content to template with current fields
-    setContent(defaultTemplate.replace(/{{\s*issue_date\s*}}/g, field1).replace(/{{\s*subject\s*}}/g, field2).replace(/{{\s*extra\s*}}/g, field3));
-    setEditing(false);
+    setContent(
+      defaultTemplate
+        .replace(/{{\s*issue_date\s*}}/g, issueDate)
+        .replace(/{{\s*subject\s*}}/g, subject)
+        .replace(/{{\s*extra\s*}}/g, extra)
+    );
   };
-
   return (
     <div className="mb-4">
-      <div className="row g-3 mb-3">
-        <div className="col-12">
-          <div className="card shadow-sm p-3">
-            <div className="row align-items-center d-print-none">
-                <div className="col-md-4 mb-2 mb-md-0">
-                  <div className="p-2 rounded border bg-white">
-                    <div className="small text-muted">Extra</div>
-                    <input className="form-control form-control-sm fw-semibold" value={field3} onChange={(e) => setField3(e.target.value)} />
-                  </div>
-                </div>
-                <div className="col-md-4 mb-2 mb-md-0">
-                  <div className="p-2 rounded border bg-white">
-                    <div className="small text-muted">Subject</div>
-                    <input className="form-control form-control-sm fw-semibold" value={field2} onChange={(e) => setField2(e.target.value)} />
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div className="p-2 rounded border bg-white">
-                    <div className="small text-muted">Issue Date</div>
-                    <input className="form-control form-control-sm fw-semibold" value={field1} onChange={(e) => setField1(e.target.value)} />
-                  </div>
-                </div>
-              </div>
+      <div className="card shadow-sm p-3 mb-3 d-print-none">
+        <div className="row g-3">
+          <div className="col-md-4">
+            <label className="small text-muted">Extra</label>
+            <input
+              className="form-control form-control-sm fw-semibold"
+              value={extra}
+              onChange={(e) => setExtra(e.target.value)}
+            />
+          </div>
+
+          <div className="col-md-4">
+            <label className="small text-muted">Subject</label>
+            <input
+              className="form-control form-control-sm fw-semibold"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+            />
+          </div>
+
+          <div className="col-md-4">
+            <label className="small text-muted">Issue Date</label>
+            <input
+              className="form-control form-control-sm fw-semibold"
+              placeholder="DD/MM/YYYY"
+              value={issueDate}
+              onChange={(e) => setIssueDate(e.target.value)}
+            />
           </div>
         </div>
       </div>
 
-      <div className="d-flex justify-content-end align-items-center mb-2 d-print-none">
-        <button className="btn btn-sm btn-outline-primary me-2" onClick={() => { setEditing(true); editableRef.current?.focus(); }}>Edit Text</button>
-        <button className="btn btn-sm btn-success me-2" onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
-        <button className="btn btn-sm btn-secondary" onClick={handleCancel}>Cancel</button>
+      {/* Actions */}
+      <div className="d-flex justify-content-end mb-2 d-print-none">
+        <button
+          className="btn btn-sm btn-success me-2"
+          onClick={handleSave}
+          disabled={saving}
+        >
+          {saving ? 'Saving...' : 'Save'}
+        </button>
+        <button className="btn btn-sm btn-secondary" onClick={handleCancel}>
+          Reset Text
+        </button>
       </div>
 
-      {/* Screen editor: textarea (hidden when printing) */}
+      {/* Editor */}
       <textarea
-        ref={editableRef}
+        ref={textareaRef}
         value={content}
         onChange={(e) => setContent(e.target.value)}
         className="form-control rounded p-3 mb-2 d-print-none"
-        style={{ minHeight: 160, textAlign: 'left', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}
+        style={{ minHeight: 160, whiteSpace: 'pre-wrap', lineHeight: 1.6 }}
       />
 
-      {/* Print-only formatted view: shows the fields and justified content */}
+      {/* Print view */}
       <div className="d-none d-print-block">
-        <CertificateHeader field1={field1} field2={field2} field3={field3} />
-        <div style={{ textAlign: 'justify', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{content}</div>
+        <CertificateHeader
+          field1={issueDate}
+          field2={subject}
+          field3={extra}
+        />
+        <div style={{ textAlign: 'justify', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+          {content}
+        </div>
       </div>
 
-      {savedAt && <div className="text-muted small mt-2">Last saved: {new Date(savedAt).toLocaleString()}</div>}
+      {savedAt && (
+        <div className="text-muted small mt-2">
+          Last saved: {new Date(savedAt).toLocaleString()}
+        </div>
+      )}
     </div>
   );
 }

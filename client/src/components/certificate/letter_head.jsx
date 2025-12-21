@@ -8,43 +8,44 @@ export default function Header() {
     name: "Loading...",
     office: "Loading...",
     location: "Loading...",
-    logoLeft:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/480px-No_image_available.svg.png",
-    logoRight:
-     "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/480px-No_image_available.svg.png",
+    logoLeft: "",
+    logoRight: "",
   });
 
   useEffect(() => {
-    // Dummy API (replace later with actual API)
     axios
-      .get("https://jsonplaceholder.typicode.com/users/1")
+      .get("http://localhost:8000/api/offices/")
       .then((res) => {
-        const data = res.data;
-        setOfficeData((prev) => ({
-          ...prev,
-          name: data.company.name || "Office Name",
-          office: data.name || "Office Name",
-          location: data.address.city || "City, Country",
-        }));
+        const office = res.data.data[0]; // ✅ IMPORTANT
+
+        setOfficeData({
+          name: office.name,
+          office: office.full_name,
+          location: office.location,
+          logoLeft: office.nishan_chap,   // ✅ FULL IMAGE URL
+          logoRight: office.office_logo,  // ✅ FULL IMAGE URL
+        });
       })
-      .catch((err) => console.error("Failed to fetch office data", err));
+      .catch((err) => {
+        console.error("Failed to fetch office data", err);
+      });
   }, []);
 
   return (
     <div
       className="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom"
-      style={{ padding: "0 40px" }} // spacing left and right ~1 inch
+      style={{ padding: "0 40px" }}
     >
       {/* Left Logo */}
-      <img
-        src={officeData.logoLeft}
-        alt="Office Logo"
-        style={{
-          width: "80px",
-          height: "80px",
-          objectFit: "cover",
-        }}
-      />
+      {officeData.logoLeft && (
+        <img
+          src={officeData.logoLeft}
+          alt="Nishan Chap"
+          width={80}
+          height={80}
+          style={{ objectFit: "contain" }}
+        />
+      )}
 
       {/* Center Text */}
       <div className="text-center flex-grow-1 mx-3">
@@ -53,16 +54,16 @@ export default function Header() {
         <p className="mb-0">{officeData.location}</p>
       </div>
 
-      {/* Right Logo / QR */}
-      <img
-        src={officeData.logoRight}
-        alt="QR Code"
-        style={{
-          width: "80px",
-          height: "80px",
-          objectFit: "cover",
-        }}
-      />
+      {/* Right Logo */}
+      {officeData.logoRight && (
+        <img
+          src={officeData.logoRight}
+          alt="Office Logo"
+          width={80}
+          height={80}
+          style={{ objectFit: "contain" }}
+        />
+      )}
     </div>
   );
 }

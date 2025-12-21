@@ -1,9 +1,11 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import axios from "axios";
 import MemberForm from "./MemberForm";
 import { MoreHorizontal, Edit2, Trash2 } from "lucide-react";
+import { useParams } from "next/navigation";
+import AlertMessage from "../common/alertMessage";
+import useAlert from "../../hook/useAlert";
 
 export default function CommitteeMembers({
   gender_stats,
@@ -17,6 +19,8 @@ export default function CommitteeMembers({
   const [openMemberId, setOpenMemberId] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
+  const { id } = useParams();
+  const { alert, showAlert, clearAlert } = useAlert();
 
   useEffect(() => {
     if (committee?.id) fetchMembers();
@@ -29,9 +33,11 @@ export default function CommitteeMembers({
       const data = resp.data;
 
       // Separate normal members and monitoring members
-      const normalMembers = (data.members || []).filter((m) => !m.is_anugaman);
+      const normalMembers = (data.members || []).filter(
+        (m) => !m.is_monitoring_committee_member
+      );
       const monitoringMembers = (data.members || []).filter(
-        (m) => m.is_anugaman
+        (m) => m.is_monitoring_committee_member
       );
 
       setMembers(normalMembers);
@@ -46,20 +52,37 @@ export default function CommitteeMembers({
   const handleAddOrUpdate = async (data) => {
     try {
       if (editing) {
-        // Update locally
+        // Update member
+        const resp = await axios.patch(
+          `${apiBase}/committees/${committee.id}/members/${editing.id}/`,
+          data
+        );
+        const updatedMember = resp.data;
         setMembers((prev) =>
-          prev.map((m) => (m.id === editing.id ? { ...m, ...data } : m))
+          prev.map((m) => (m.id === editing.id ? updatedMember : m))
         );
         setMonitoring((prev) =>
-          prev.map((m) => (m.id === editing.id ? { ...m, ...data } : m))
+          prev.map((m) => (m.id === editing.id ? updatedMember : m))
         );
       } else {
-        // Add new member locally (you can replace with API POST)
-        const newId = Date.now();
-        const newItem = { id: newId, ...data };
-        if (newItem.is_anugaman) setMonitoring((prev) => [newItem, ...prev]);
-        else setMembers((prev) => [newItem, ...prev]);
+        // Add new member
+        const resp = await axios.post(
+          `${apiBase}/committees/${committee.id}/members/`,
+          data
+        );
+        showAlert("success", "Member added successfully.");
+
+        const newMember = resp.data; // The API returns the new member including its id
+
+        if (newMember.is_monitoring_committee_member) {
+          setMonitoring((prev) => [newMember, ...prev]);
+        } else {
+          setMembers((prev) => [newMember, ...prev]);
+        }
+
+        console.log("New member ID:", newMember.id);
       }
+
       setShowForm(false);
       setEditing(null);
     } catch (err) {
@@ -71,14 +94,43 @@ export default function CommitteeMembers({
     setEditing(member);
     setShowForm(true);
   };
-  const handleDelete = (id) => {
+
+  const handleDelete = async (memberId) => {
     if (!confirm("Are you sure you want to delete this member?")) return;
-    setMembers((prev) => prev.filter((m) => m.id !== id));
-    setMonitoring((prev) => prev.filter((m) => m.id !== id));
+
+    try {
+      await axios.delete(
+        `${apiBase}/committees/${committee.id}/members/${memberId}/`
+      );
+
+      // Show success message using reusable alert
+      showAlert("success", "Member deleted successfully.");
+
+      // Remove from normal members
+      setMembers((prev) => prev.filter((m) => m.id !== memberId));
+
+      // Remove from monitoring members
+      setMonitoring((prev) => prev.filter((m) => m.id !== memberId));
+    } catch (err) {
+      console.error("Failed to delete member", err);
+
+      // Show error message using reusable alert
+      showAlert(
+        "danger",
+        err.response?.data?.detail ||
+          "Failed to delete member. Please try again."
+      );
+    }
   };
 
   return (
     <div className="mt-4">
+      <AlertMessage
+        type={alert.type}
+        message={alert.message}
+        onClose={clearAlert}
+      />
+
       <div className="d-flex justify-content-between align-items-center mb-2">
         <h6 className="mb-0">Members of {committee.name}</h6>
         <div>

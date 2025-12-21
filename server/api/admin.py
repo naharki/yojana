@@ -5,6 +5,8 @@ from .model.ward import Ward
 from .model.committeetype import CommitteeType
 from .model.committee import Committee
 from .model.committee import Member
+from .model.plan import Plan
+
 
 @admin.register(Office)
 class OfficeAdmin(admin.ModelAdmin):
@@ -40,7 +42,15 @@ class CommitteeAdmin(admin.ModelAdmin):
 
 @admin.register(Member)
 class MemberAdmin(admin.ModelAdmin):
-    list_display = ('name', 'committee', 'role', 'citizenship_number', 'is_account_holder', 'created_at')
+    list_display = ('name', 'committee', 'designation', 'citizenship_number', 'is_account_holder', 'created_at')
     search_fields = ('name', 'citizenship_number', 'committee__name')
-    list_filter = ('role', 'is_account_holder', 'created_at')
+    list_filter = ('designation', 'is_account_holder', 'created_at')
     ordering = ('-created_at',)
+
+
+@admin.register(Plan)
+class PlannigAdmin(admin.ModelAdmin):
+    list_display= ('registration_number', 'plan_name', 'ward_number','location','allocated_budget','implementation_level','implementation_status','date')
+    search_fields = ('registration_number', 'plan_name', 'ward_number','location','allocated_budget','implementation_level','implementation_status')
+    list_filter = ('registration_number', 'plan_name', 'ward_number','location','allocated_budget','implementation_level','implementation_status')
+    ordering = ('-registration_number',)

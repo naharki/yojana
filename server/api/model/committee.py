@@ -77,15 +77,13 @@ class Member(models.Model):
         help_text="Unique citizenship number to prevent duplicate members"
     )
 
-    phone = models.CharField(max_length=20, blank=True)
-
     sex = models.CharField(
         max_length=10,
         choices=SEX_CHOICES,
         default="male"
     )
 
-    role = models.CharField(
+    designation = models.CharField(
         max_length=50,
         choices=ROLE_CHOICES,
         default="sadasya"
@@ -102,11 +100,9 @@ class Member(models.Model):
     role_priority = models.PositiveIntegerField(default=99)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"{self.name} ({self.get_role_display()})"
-
+    
     def save(self, *args, **kwargs):
-        self.role_priority = self.ROLE_PRIORITY.get(self.role, 99)
+        self.role_priority = self.ROLE_PRIORITY.get(self.designation, 99)
         super().save(*args, **kwargs)
 
     class Meta:

@@ -16,7 +16,7 @@ export default function WardList({ items, onEdit, onDelete }) {
 
   return (
     <div className="table-responsive">
-      <table className="table table-hover table-striped">
+      <table className="table table-hover table-striped table-bordered align-middle">
         <thead className="table-light">
           <tr>
             <th style={{ width: '5%' }}>S.N</th>

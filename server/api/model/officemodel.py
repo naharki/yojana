@@ -9,6 +9,8 @@ class Office_model(models.Model):
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     website = models.URLField(max_length=200, blank=True, null=True)
     slogan = models.CharField(max_length=255, blank=True, null=True)
+    nishan_chap = models.ImageField(upload_to='images/nishan_chap/', null=True, blank=True)  
+    office_logo = models.ImageField(upload_to='images/office_logo/', null=True, blank=True)  
 
     created_at = models.DateTimeField(auto_now_add=True)  
     updated_at = models.DateTimeField(auto_now=True)    
