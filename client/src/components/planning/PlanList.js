@@ -1,36 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Settings, FileSpreadsheet } from "lucide-react";
 import PlanForm from "./PlanForm";
-import { FileImport } from "./fileimport";
-import { FileExport } from "./FileExport";
+import { useWards } from "@/hook/useWards";
+import { PlanListHeader } from "./planListHeader";
+import { Edit2, Trash2, MoreHorizontal, Users, FileText, CreditCard, Lock } from 'lucide-react';
+
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 export default function PlanList({ loading, error, data, onSuccess }) {
   const [openActionId, setOpenActionId] = useState(null);
+  const { ward, loading: wardLoading } = useWards();
+  const [wardFilter, setWardFilter] = useState("");
+  const [nameFilter, setnameFilter] = useState("");
+  const [openId, setOpenId] = useState(null)
+
+  const filteredData = useMemo(() => {
+    return data.filter((plan) => {
+      const matchesWard = wardFilter ? plan.ward_number === wardFilter : true;
+      const matchesName = plan.plan_name
+        .toLowerCase()
+        .includes(nameFilter.toLowerCase());
+      return matchesWard && matchesName;
+    });
+  }, [data, wardFilter, nameFilter]);
+  const handleResetFilters = () => {
+    setWardFilter("");
+    setnameFilter("");
+  };
+
   return (
     <div className="p-3">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h4 className="mb-0">योजनाहरू (Plans)</h4>
       </div>
 
-      <div className="row mb-3 align-items-center">
-        <div className="col-md-3 mb-2">
-          <input placeholder="Filter by वडा नं" className="form-control" />
-        </div>
-        <div className="col-md-4 mb-2">
-          <input placeholder="Filter by योजनाको नाम" className="form-control" />
-        </div>
-        <div className="col-md-5 mb-2 d-flex justify-content-end flex-nowrap">
-          <button className="btn btn-sm btn-primary me-2">Apply</button>
-          <button className="btn btn-sm btn-outline-secondary me-2">
-            Reset
-          </button>
-          <FileImport onSuccess={onSuccess} />
-          <FileExport />
-        </div>
-      </div>
+      <PlanListHeader
+        onSuccess={onSuccess}
+        data={data}
+        ward={ward}
+        onApplyWard={setWardFilter}
+        filterData={filteredData}
+        setnameFilter={setnameFilter}
+        nameFilter={nameFilter}
+        onReset={handleResetFilters}
+      />
 
       {loading ? (
         <div>Loading...</div>
@@ -53,15 +68,14 @@ export default function PlanList({ loading, error, data, onSuccess }) {
             </thead>
 
             <tbody>
-              {data.length === 0 ? (
+              {filteredData.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="text-center text-muted">
-                    No results. Use filters and click Apply/Search to load
-                    plans.
+                    No results. Use filters and click Apply to load plans.
                   </td>
                 </tr>
               ) : (
-                data.map((plan, index) => (
+                filteredData.map((plan, index) => (
                   <tr key={plan.id}>
                     <td>{index + 1}</td>
                     <td>{plan.registration_number}</td>
@@ -70,28 +84,40 @@ export default function PlanList({ loading, error, data, onSuccess }) {
                     <td>{plan.location}</td>
                     <td>{plan.allocated_budget}</td>
                     <td>{plan.implementation_level}</td>
-                    <td>{plan.implementation_status}</td>
+                    <td><span className="badge bg-primary">{plan.implementation_status}</span></td>
                     <td>{plan.date}</td>
-                    <td style={{ position: 'relative', width: 80 }}>
-                      <div className="d-flex align-items-center justify-content-center">
-                        <button title="Actions" className="btn btn-sm btn-light p-1" onClick={() => setOpenActionId(openActionId === plan.id ? null : plan.id)} style={{ borderRadius: 6 }}>
-                          <Settings size={16} />
-                        </button>
-                      </div>
+                    {/* tsting */}
+                       <td>
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  <button className="btn btn-sm btn-outline-secondary" onClick={() => setOpenId(openId === plan.id ? null : plan.id)} title="Actions">
+                    <MoreHorizontal size={16} />
+                  </button>
 
-                      {openActionId === plan.id && (
-                        <div className="position-absolute bg-white border rounded shadow-sm" style={{ right: 8, top: '110%', zIndex: 2000, minWidth: 140 }}>
-                          <div className="p-2">
-                            <button className="w-100 btn btn-sm btn-link text-start" onClick={() => { setOpenActionId(null); handleEdit(plan); }}>
-                              Edit
-                            </button>
-                            <button className="w-100 btn btn-sm btn-link text-start text-danger" onClick={() => { setOpenActionId(null); handleDelete(plan.id); }}>
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                      </td>
+                  {openId === plan.id && (
+                    <div className="card shadow-sm p-2" style={{ position: 'absolute', right: '110%', top: 0, minWidth: 200, zIndex: 2000 }}>
+                      <button className="btn btn-sm btn-light d-flex align-items-center w-100 mb-1" onClick={() => { setOpenId(null); onAction('members', plan); }}>
+                        <Users size={14} className="me-2"/> Members
+                      </button>
+                      <button className="btn btn-sm btn-light d-flex align-items-center w-100 mb-1" onClick={() => { setOpenId(null); onAction('certificate', plan); }}>
+                        <FileText size={14} className="me-2"/> Certificate
+                      </button>
+                      <button className="btn btn-sm btn-light d-flex align-items-center w-100 mb-1" onClick={() => { setOpenId(null); onAction('account_open', plan); }}>
+                        <CreditCard size={14} className="me-2"/> Account Open
+                      </button>
+                      <button className="btn btn-sm btn-light d-flex align-items-center w-100 mb-1" onClick={() => { setOpenId(null); onAction('account_closed', plan); }}>
+                        <Lock size={14} className="me-2"/> Account Closed
+                      </button>
+                      <hr className="my-1" />
+                      <button className="btn btn-sm btn-light d-flex align-items-center w-100 mb-1" onClick={() => { setOpenId(null); onEdit(plan); }}>
+                        <Edit2 size={14} className="me-2"/> Edit
+                      </button>
+                      <button className="btn btn-sm btn-danger d-flex align-items-center w-100" onClick={() => { setOpenId(null); if (confirm('Are you sure you want to delete this committee?')) onDelete(plan.id); }}>
+                        <Trash2 size={14} className="me-2"/> Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </td>
                   </tr>
                 ))
               )}

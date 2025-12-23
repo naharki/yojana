@@ -3,12 +3,12 @@
 import { useSelector } from "react-redux";
 import {
   selectOffice,
-  selectGlobalLoading,
+  selectOfficeLoading
 } from "@/redux/slices/globalSlice";
 
 export const useOffice = () => {
   const office = useSelector(selectOffice);
-  const loading = useSelector(selectGlobalLoading);
+  const loading = useSelector(selectOfficeLoading);
 
   return { office, loading };
 };

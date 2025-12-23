@@ -5,7 +5,6 @@ import { Edit2, Trash2, MoreHorizontal, Users, FileText, CreditCard, Lock } from
 
 export default function CommitteeList({ items, onEdit, onDelete, onAction }) {
   const [openId, setOpenId] = useState(null);
-  console.log('CommitteeList items:', items);
 
   if (!items || items.length === 0) {
     return (

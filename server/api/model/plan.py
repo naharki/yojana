@@ -12,3 +12,5 @@ class Plan(models.Model):
 
     def __str__(self):
         return f"{self.registration_number} - {self.plan_name}"
+    class Meta:
+        ordering =['registration_number']
