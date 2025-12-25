@@ -1,10 +1,70 @@
 "use client";
 
 import { useState } from "react";
-import { Edit2, Trash2, MoreHorizontal } from "lucide-react";
+import { Edit2, Trash2, MoreHorizontal, Users, FileText, CreditCard, Lock } from 'lucide-react';
+import ListDataTableCommon from "../common/table";
+import { RowActions } from "../common/rowActions";
 
 export default function FiscalYearList({ items, onEdit, onDelete }) {
   const [openId, setOpenId] = useState(null);
+ const committeeActions = [
+    { label: 'Edit', icon: Edit2, handler: onEdit },
+    {
+      label: 'Delete',
+      icon: Trash2,
+      danger: true,
+      confirm: (row) => `Are you sure you want to delete ${row.name}?`,
+      handler: (row) => onDelete(row.id),
+    },
+  ];
+  const columns = [
+    {
+      id:'serial_number',
+      label:'क्र.स',
+      render:(row, index) => index+1
+    },
+    {
+      id:'name',
+      label:'आ.व',
+      key:'name'
+    },
+    {
+      id:'eng_name',
+      label:'अंग्रेजी नाम',
+      key:'eng_name'
+    },
+    {
+      id:'code',
+      label:'कोड',
+      key:'code'
+    },
+    {
+      id:'start_year',
+      label:'सुरु बर्ष',
+      key:'start_year'
+    },
+    {
+      id:'end_year',
+      label:'अन्त्य बर्ष',
+      key:'end_year'
+    },
+    {
+      id:'start_date',
+      label:'मितिदेखि',
+      key:'start_date'
+    },
+    {
+      id:'end_date',
+      label:'मितिसम्म',
+      key:'end_date'
+    },
+    {
+      id:'action',
+      label:'कार्य',
+     render: (row) => <RowActions row={row} actions={committeeActions} />,
+       
+    }
+  ]
 
   if (!items || items.length === 0) {
     return (
@@ -16,86 +76,7 @@ export default function FiscalYearList({ items, onEdit, onDelete }) {
 
   return (
     <div className="table-responsive">
-      <table className="table table-hover table-striped table-bordered align-middle">
-        <thead className="table-light">
-          <tr>
-            <th style={{ width: "5%" }}>क्र.स</th> 
-            <th style={{ width: "15%" }}>नाम</th> 
-            <th style={{ width: "15%" }}>नाम अंग्रेजी</th>
-            <th style={{ width: "10%" }}>कोड</th> 
-            <th style={{ width: "10%" }}>सुरु बर्ष</th> 
-            <th style={{ width: "10%" }}>अन्त्य बर्ष</th> 
-            <th style={{ width: "15%" }}>मितिदेखि</th> 
-            <th style={{ width: "15%" }}>मितिसम्म</th> 
-            <th style={{ width: "5%" }}>कार्य</th> 
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((it, index) => (
-            <tr key={it.id} style={{ position: "relative" }}>
-              <td>
-                <strong>{index + 1}</strong>
-              </td>
-              <td>{it.name}</td>
-              <td>{it.eng_name}</td>
-              <td>{it.code}</td>
-              <td>{it.start_year}</td>
-              <td>{it.end_year}</td>
-              <td>{it.start_date}</td>
-              <td>{it.end_date}</td>
-              <td>
-                <div style={{ position: "relative", display: "inline-block" }}>
-                  <button
-                    className="btn btn-sm btn-outline-secondary"
-                    onClick={() => setOpenId(openId === it.id ? null : it.id)}
-                    title="Actions"
-                  >
-                    <MoreHorizontal size={16} />
-                  </button>
-
-                  {openId === it.id && (
-                    <div
-                      className="card shadow-sm p-2"
-                      style={{
-                        position: "absolute",
-                        right: "110%",
-                        top: 0,
-                        minWidth: "140px",
-                        zIndex: 2000,
-                      }}
-                    >
-                      <button
-                        className="btn btn-sm btn-light d-flex align-items-center w-100 mb-1"
-                        onClick={() => {
-                          setOpenId(null);
-                          onEdit(it);
-                        }}
-                      >
-                        <Edit2 size={14} className="me-2" /> Edit
-                      </button>
-                      <button
-                        className="btn btn-sm btn-danger d-flex align-items-center w-100"
-                        onClick={() => {
-                          setOpenId(null);
-                          if (
-                            confirm(
-                              "Are you sure you want to delete this fiscal year?"
-                            )
-                          ) {
-                            onDelete(it.id);
-                          }
-                        }}
-                      >
-                        <Trash2 size={14} className="me-2" /> Delete
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <ListDataTableCommon columns={columns} data={items}/>
     </div>
   );
 }

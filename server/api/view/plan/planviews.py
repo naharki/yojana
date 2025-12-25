@@ -7,6 +7,13 @@ from ...model.plan import Plan
 from ...serializers.plan.panserializer import PlanSerializer
 
 
+def normalize_excel_date(value):
+    if pd.isna(value):
+        return ""
+    if hasattr(value, "strftime"):
+        return value.strftime("%Y-%m-%d")
+    return str(value).split(" ")[0]
+
 class PlanViewSet(viewsets.ModelViewSet):
     queryset = Plan.objects.all().order_by("-id")
     serializer_class = PlanSerializer
@@ -40,7 +47,7 @@ class PlanViewSet(viewsets.ModelViewSet):
 
         saved = 0
         errors = []
-
+        
         for index, row in df.iterrows():
             try:
                 Plan.objects.create(
@@ -51,7 +58,7 @@ class PlanViewSet(viewsets.ModelViewSet):
                     allocated_budget = int(row['allocated_budget']),
                     implementation_level= str(row['implementation_level']).strip(),
                     implementation_status = str(row['implementation_status']).strip(),
-                    date = str(row['date']).strip(),
+                      date=normalize_excel_date(row["date"]), 
                 )
                 saved += 1
             except Exception as e:

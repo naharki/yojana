@@ -1,7 +1,6 @@
 "use client";
-
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { OfficeService } from "@/services/officeServices";
 
 export default function Header() {
   const [officeData, setOfficeData] = useState({
@@ -13,17 +12,15 @@ export default function Header() {
   });
 
   useEffect(() => {
-    axios
-      .get("http://localhost:8000/api/offices/")
-      .then((res) => {
-        const office = res.data.data[0]; // ✅ IMPORTANT
+    OfficeService.list().then((res) => {
+        const office = res.data.data[0]; 
 
         setOfficeData({
           name: office.name,
           office: office.full_name,
           location: office.location,
-          logoLeft: office.nishan_chap,   // ✅ FULL IMAGE URL
-          logoRight: office.office_logo,  // ✅ FULL IMAGE URL
+          logoLeft: office.nishan_chap,   
+          logoRight: office.office_logo,  
         });
       })
       .catch((err) => {
@@ -39,7 +36,7 @@ export default function Header() {
       {/* Left Logo */}
       {officeData.logoLeft && (
         <img
-          src={officeData.logoLeft}
+          src={officeData.logoLeft || ''}
           alt="Nishan Chap"
           width={80}
           height={80}
@@ -57,7 +54,7 @@ export default function Header() {
       {/* Right Logo */}
       {officeData.logoRight && (
         <img
-          src={officeData.logoRight}
+          src={officeData.logoRight || ''}
           alt="Office Logo"
           width={80}
           height={80}

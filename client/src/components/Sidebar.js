@@ -13,9 +13,9 @@ export default function Sidebar({ collapsed = false }) {
       label: 'Basic Setup',
       icon: Settings,
       subItems: [
-        { id: 'office', label: 'Office Information', href: '/dashboard/office' },
-        { id: 'departments', label: 'Departments', href: '/dashboard/departments' },
-        { id: 'designations', label: 'Designations', href: '/dashboard/designations' },
+        { id: 'office', label: 'Office Information', href: '/dashboard/basic-setup/office' },
+        { id: 'departments', label: 'Departments', href: '/dashboard/basic-setup/departments' },
+        { id: 'designations', label: 'Designations', href: '/dashboard/basic-setup/designations' },
         { id: 'fiscalyear', label: 'Fiscal Year', href: '/dashboard/basic-setup/fiscal-year' },
         { id: 'ward', label: 'Wards', href: '/dashboard/basic-setup/ward' },
       ],

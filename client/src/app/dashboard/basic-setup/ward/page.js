@@ -4,8 +4,9 @@ import axios from "axios";
 import WardForm from "@/components/ward/WardForm";
 import WardList from "@/components/ward/WardList";
 import { PlusCircle } from 'lucide-react';
+import { wardsService } from "@/services/wardServices";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 
 export default function WardPage() {
   const [items, setItems] = useState([]);
@@ -22,7 +23,7 @@ export default function WardPage() {
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const resp = await axios.get(API_URL + "/wards/");
+      const resp = await wardsService.list();
       setItems(resp.data.data || resp.data);
     } catch (err) {
       console.error("Error fetching wards:", err);
@@ -47,7 +48,7 @@ export default function WardPage() {
     try {
       setError("");
       if (editing) {
-        await axios.put(API_URL + `/wards/${editing.id}/`, data);
+        await wardsService.update(editing.id, data);
         setSuccess("Ward updated successfully");
       } else {
         await axios.post(API_URL + "/wards/", data);

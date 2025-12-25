@@ -1,11 +1,44 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Edit2, Trash2, MoreHorizontal } from 'lucide-react';
+import { useState } from "react";
+import { Edit2, Trash2, MoreHorizontal } from "lucide-react";
+import ListDataTableCommon from "../common/table";
+import { RowActions } from "../common/rowActions";
 
 export default function WardList({ items, onEdit, onDelete }) {
-  const [openId, setOpenId] = useState(null);
-
+  const WardActions = [
+    { label: "Edit", icon: Edit2, handler: onEdit },
+    {
+      label: "Delete",
+      icon: Trash2,
+      danger: true,
+      confirm: (row) => `Are you sure you want to delete ${row.name}?`,
+      handler: (row) => onDelete(row.id),
+    },
+  ];
+  const wardColumn = [
+    {
+      id: "serial_number",
+      label: "क्र.स",
+      render: (row, index) => index + 1,
+    },
+    {
+      id: "number",
+      label: "वडा.नं",
+      key: "number",
+    },
+    {
+      id: "ward_location",
+      label: "ठेगाना",
+      key: "ward_location",
+    },
+    {
+      id: "actions",
+      label: "⚙️ Action",
+      render: (row) => <RowActions row={row} actions={WardActions} />,
+    },
+  ];
+  
   if (!items || items.length === 0) {
     return (
       <div className="alert alert-info">
@@ -16,74 +49,7 @@ export default function WardList({ items, onEdit, onDelete }) {
 
   return (
     <div className="table-responsive">
-      <table className="table table-hover table-striped table-bordered align-middle">
-        <thead className="table-light">
-          <tr>
-            <th style={{ width: '5%' }}>S.N</th>
-            <th style={{ width: '55%' }}>Ward Number</th>
-            <th style={{ width: '25%' }}>Location</th>
-            <th style={{ width: '15%' }}>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((it, index) => (
-            <tr key={it.id} style={{ position: 'relative' }}>
-              <td>
-                <strong>{index + 1}</strong>
-              </td>
-              <td>{it.number}</td>
-              <td>
-                <span className="badge bg-secondary">{it.ward_location}</span>
-              </td>
-              <td>
-                <div style={{ position: 'relative', display: 'inline-block' }}>
-                  <button
-                    className="btn btn-sm btn-outline-secondary"
-                    onClick={() => setOpenId(openId === it.id ? null : it.id)}
-                    title="Actions"
-                  >
-                    <MoreHorizontal size={16} />
-                  </button>
-
-                  {openId === it.id && (
-                    <div
-                      className="card shadow-sm p-2"
-                      style={{
-                        position: 'absolute',
-                        right: '110%',
-                        top: 0,
-                        minWidth: '140px',
-                        zIndex: 2000,
-                      }}
-                    >
-                      <button
-                        className="btn btn-sm btn-light d-flex align-items-center w-100 mb-1"
-                        onClick={() => {
-                          setOpenId(null);
-                          onEdit(it);
-                        }}
-                      >
-                        <Edit2 size={14} className="me-2" /> Edit
-                      </button>
-                      <button
-                        className="btn btn-sm btn-danger d-flex align-items-center w-100"
-                        onClick={() => {
-                          setOpenId(null);
-                          if (confirm('Are you sure you want to delete this ward?')) {
-                            onDelete(it.id);
-                          }
-                        }}
-                      >
-                        <Trash2 size={14} className="me-2" /> Delete
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <ListDataTableCommon columns={wardColumn} data={items} />
     </div>
   );
 }

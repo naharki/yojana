@@ -5,6 +5,7 @@ import axios from "axios";
 import { PlusCircle } from 'lucide-react';
 import CommitteeTypeList from "@/components/committee-type/CommitteeTypeList";
 import CommitteeTypeForm from "@/components/committee-type/committeeTypeForm";
+import { CommitteeTypesService } from "@/services/committeeService";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -23,7 +24,7 @@ export default function CommitteeTypePage() {
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const resp = await axios.get(API_URL + "/committeetypes/");
+      const resp = await CommitteeTypesService.list();
       setItems(resp.data.data || resp.data);
     } catch (err) {
       console.error("Error fetching wards:", err);

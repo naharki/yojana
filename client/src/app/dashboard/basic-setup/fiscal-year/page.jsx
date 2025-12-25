@@ -5,8 +5,7 @@ import axios from "axios";
 import { PlusCircle } from 'lucide-react';
 import FiscalYearList from "@/components/fiscal-year/FiscalYearList";
 import FiscalYearForm from "@/components/fiscal-year/FiscalYearForm";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { fiscalyearsService } from "@/services/fiscalYearServices";
 
 export default function FiscalYearPage() {
   const [items, setItems] = useState([]);
@@ -25,7 +24,7 @@ export default function FiscalYearPage() {
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const resp = await axios.get(API_URL + "/fiscalyears/");
+      const resp = await fiscalyearsService.list();
       setItems(resp.data.data || resp.data);
     } catch (err) {
       console.error("Error fetching Fiscal Years:", err);

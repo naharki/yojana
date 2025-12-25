@@ -16,8 +16,6 @@ router.register(r'fiscalyears', FiscalYearViewSet, basename='fiscalyear')
 router.register(r'wards', WardViewSet, basename='ward')
 router.register(r'committeetypes', CommitteeTypeViewSet, basename='committeetype')
 router.register(r'committees', CommitteeViewSet, basename='committee')
-
-# ✅ PERSON API (FIXED)
 router.register(r'plans', PlanViewSet, basename='plans')
 
 members_router = routers.NestedDefaultRouter(

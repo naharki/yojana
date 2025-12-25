@@ -73,3 +73,4 @@ export default function CommitteeList({ data, onEdit, onDelete, onAction }) {
     </div>
   );
 }
+
