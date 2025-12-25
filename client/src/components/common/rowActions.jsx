@@ -1,15 +1,22 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { MoreHorizontal } from 'lucide-react';
+import { useState } from "react";
+import { MoreHorizontal } from "lucide-react";
 
-export const RowActions = ({ row, actions = [], onEdit, onDelete, onAction }) => {
-  const [openId, setOpenId] = useState(null);
-
+export const RowActions = ({
+  row,
+  actions,
+  openId,
+  setOpenId,
+  onEdit,
+  onDelete,
+  onAction,
+}) => {
   if (!actions.length) return null;
+  const isOpen = openId === row.id;
 
   return (
-    <div style={{ position: 'relative', display: 'inline-block' }}>
+    <div style={{ position: "relative", display: "inline-block" }}>
       <button
         className="btn btn-sm btn-outline-secondary"
         onClick={() => setOpenId(openId === row.id ? null : row.id)}
@@ -21,14 +28,22 @@ export const RowActions = ({ row, actions = [], onEdit, onDelete, onAction }) =>
       {openId === row.id && (
         <div
           className="card shadow-sm p-2"
-          style={{ position: 'absolute', right: '110%', top: 0, minWidth: 200, zIndex: 2000 }}
+          style={{
+            position: "absolute",
+            right: "110%",
+            top: 0,
+            minWidth: 200,
+            zIndex: 2000,
+          }}
         >
           {actions.map((action, i) => {
             const Icon = action.icon;
             return (
               <button
                 key={i}
-                className={`btn btn-sm d-flex align-items-center w-100 mb-1 ${action.danger ? 'btn-danger' : 'btn-light'}`}
+                className={`btn btn-sm d-flex align-items-center w-100 mb-1 ${
+                  action.danger ? "btn-danger" : "btn-light"
+                }`}
                 onClick={() => {
                   setOpenId(null);
                   if (action.confirm) {
@@ -47,4 +62,4 @@ export const RowActions = ({ row, actions = [], onEdit, onDelete, onAction }) =>
       )}
     </div>
   );
-}
+};
