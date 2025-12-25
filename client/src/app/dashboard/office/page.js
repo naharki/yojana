@@ -1,11 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import OfficeList from '@/components/office/OfficeList';
 import OfficeForm from '@/components/office/OfficeForm';
-
-const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/offices/`;
+import { OfficeService } from '@/services/officeServices';
 
 export default function OfficePage() {
   const [offices, setOffices] = useState([]);
@@ -20,7 +18,8 @@ export default function OfficePage() {
   const fetchOffices = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(API_URL);
+      const response = await OfficeService.list();
+      console.log(response)
       setOffices(response.data.data);
     } catch (error) {
       console.error('Error fetching offices:', error);
@@ -32,7 +31,7 @@ export default function OfficePage() {
   const handleSave = async (office) => {
     try {
       if (selectedOffice) {
-        await axios.put(`${API_URL}${selectedOffice.id}/`, office);
+        await OfficeService.update(selectedOffice.id, office);
       } else {
         await axios.post(API_URL, office);
       }

@@ -1,81 +1,59 @@
 "use client";
 
-import { useState } from "react";
-import { Edit2, Trash2, MoreHorizontal } from "lucide-react";
+import { Edit2, Trash2 } from "lucide-react";
 
-export default function TabularData({ columns, data }) {
+export default function ListDataTableCommon({
+  columns,
+  data,
+  loading = false,
+  onEdit,
+  onDelete,
+  emptyTitle = "No Data Found",
+  emptyMessage = "Please add data to get started.",
+}) {
+  console.log(data)
+  // 🔄 Loading state
+  if (loading) {
+    return (
+      <div className="text-center py-5">
+        <div className="spinner-border text-primary" role="status" />
+      </div>
+    );
+  }
+
+  // 📭 Empty state
+  if (!data || data.length === 0) {
+    return (
+      <div className="alert alert-info text-center py-5 mb-0">
+        <h5 className="mb-2">📭 {emptyTitle}</h5>
+        <p className="mb-0">{emptyMessage}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="table-responsive">
-      <table className="table table-hover table-striped table-bordered align-middle">
+    <div className="table-responsive"style={{ height: "57vh" }}>
+      <table className="table table-striped table-hover table-bordered mb-0">
         <thead className="table-light">
-          <tr> 
-             {columns.map((col) => (
-            <th key={col.key}>{col.label}</th>
-          ))}
+          <tr>
+            {columns.map((col) => (
+              <th key={col.id}>{col.label}</th>
+            ))}
           </tr>
         </thead>
-        <tbody>
-          {data.map((it, index) => (
-            <tr key={it.id} style={{ position: "relative" }}>
-              <td>
-                <strong>{index + 1}</strong>
-              </td>
-              <td>{it.name}</td>
-              <td>{it.eng_name}</td>
-              <td>{it.code}</td>
-              <td>{it.start_year}</td>
-              <td>{it.end_year}</td>
-              <td>{it.start_date}</td>
-              <td>{it.end_date}</td>
-              <td>
-                <div style={{ position: "relative", display: "inline-block" }}>
-                  <button
-                    className="btn btn-sm btn-outline-secondary"
-                    onClick={() => setOpenId(openId === it.id ? null : it.id)}
-                    title="Actions"
-                  >
-                    <MoreHorizontal size={16} />
-                  </button>
 
-                  {/* {openId === it.id && (
-                    <div
-                      className="card shadow-sm p-2"
-                      style={{
-                        position: "absolute",
-                        right: "110%",
-                        top: 0,
-                        minWidth: "140px",
-                        zIndex: 2000,
-                      }}
-                    >
-                      <button
-                        className="btn btn-sm btn-light d-flex align-items-center w-100 mb-1"
-                        onClick={() => {
-                          setOpenId(null);
-                          onEdit(it);
-                        }}
-                      >
-                        <Edit2 size={14} className="me-2" /> Edit
-                      </button>
-                      <button
-                        className="btn btn-sm btn-danger d-flex align-items-center w-100"
-                        onClick={() => {
-                          setOpenId(null);
-                          if (
-                            confirm(
-                              "Are you sure you want to delete this fiscal year?"
-                            )
-                          ) {
-                            onDelete(it.id);
-                          }
-                        }}
-                      >
-                        <Trash2 size={14} className="me-2" /> Delete
-                      </button>
-                    </div>
-                  )} */}
-                </div>
-              </td>
+        <tbody>
+          {data.map((row, index) => (
+            <tr key={row.id ?? index}>
+              {columns.map((col) => (
+                <td key={col.id} className="px-3 py-2 align-middle">
+                  {col.render ? (
+                    col.render(row, index)
+                  ) : col.key ? (
+                    row[col.key]
+                  ) : null}
+                </td>
+              ))}
             </tr>
           ))}
         </tbody>

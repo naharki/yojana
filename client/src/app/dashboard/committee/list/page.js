@@ -2,24 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
 import CommitteeForm from '@/components/committee/CommitteeForm';
 import CommitteeList from '@/components/committee/CommitteeList';
-// Members are shown on a dedicated nested route: /dashboard/committee/[id]/members
 import { PlusCircle } from 'lucide-react';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-function mapToCommittee(p) {
-  return {
-    id: p.id,
-    reg_no: `REG-${String(p.id).padStart(3,'0')}`,
-    name: p.title ? p.title.slice(0,40) : `Committee ${p.id}`,
-    committee_type: p.userId ? `Type ${p.userId}` : 'General',
-    address: p.body ? p.body.slice(0,40) : 'Unknown',
-    formation_date: `${2020 + (p.id % 5)}-01-15`,
-  };
-}
+import { CommitteeService } from '@/services/committeeService';
 
 export default function CommitteeListPage() {
   const [items, setItems] = useState([]);
@@ -30,11 +16,12 @@ export default function CommitteeListPage() {
   const [success, setSuccess] = useState('');
 
   useEffect(() => { fetchItems(); }, []);
+  const router = useRouter();
 
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const resp = await axios.get(API_URL + '/committees/');
+      const resp = await CommitteeService.list() ;
       setItems(resp.data);
       
     } catch (err) {
@@ -47,17 +34,16 @@ export default function CommitteeListPage() {
     try {
       setError('');
       if (editing) {
-        await axios.put(API_URL + `/committees/${editing.id}`, data);
+        await CommitteeService.update();
         setItems((prev) => prev.map((it) => it.id === editing.id ? { ...it, ...data } : it));
         setSuccess('Committee updated');
       } else {
-        const resp = await axios.post(API_URL + '/committees', data);
+        const resp = await CommitteeService.create();
         const newId = resp.data.id || Date.now();
         const newItem = { id: newId, ...data };
         setItems((prev) => [newItem, ...prev]);
         setSuccess('Committee created');
       }
-      if (!USING_DUMMY) await fetchItems();
       setShowForm(false);
       setEditing(null);
       setTimeout(() => setSuccess(''), 3000);
@@ -71,18 +57,15 @@ export default function CommitteeListPage() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(API_URL + `/committees/${id}`);
+      await CommitteeService.remove();
       setItems((prev) => prev.filter((i) => i.id !== id));
       setSuccess('Committee deleted');
-      if (!USING_DUMMY) await fetchItems();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       console.error(err);
       setError('Failed to delete committee');
     }
   };
-
-  const router = useRouter();
 
   const handleAction = (action, it) => {
     console.log('handleAction', action, it);
@@ -113,7 +96,7 @@ export default function CommitteeListPage() {
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h6 className="mb-0">Committee List</h6>
             <button className="btn btn-primary d-flex align-items-center" onClick={() => { setEditing(null); setShowForm(true); }}>
-              <PlusCircle size={18} className="me-2"/> Add Committee
+              <PlusCircle size={18} className="me-2"/> Add
             </button>
           </div>
 
@@ -140,7 +123,7 @@ export default function CommitteeListPage() {
             <div className="text-center"><div className="spinner-border" role="status"><span className="visually-hidden">Loading...</span></div></div>
           ) : (
             <>
-              <CommitteeList items={items} onEdit={handleEdit} onDelete={handleDelete} onAction={handleAction} />
+              <CommitteeList data={items} onEdit={handleEdit} onDelete={handleDelete} onAction={handleAction} />
             </>
           )}
         </div>
