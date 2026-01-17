@@ -7,6 +7,7 @@ import ListDataTableCommon from '../common/table';
 
 export default function CommitteeList({ data, onEdit, onDelete, onAction }) {
   const [openId, setOpenId] = useState(null);
+  
   const committeeActions = [
     { label: 'Members', icon: Users, handler: (row) => onAction('members', row) },
     { label: 'Certificate', icon: FileText, handler: (row) => onAction('certificate', row) },
@@ -55,7 +56,7 @@ export default function CommitteeList({ data, onEdit, onDelete, onAction }) {
     {
       id: "actions",
       label: "⚙️ Action",
-      render: (row) => <RowActions row={row} actions={committeeActions} />,
+      render: (row) => <RowActions row={row} actions={committeeActions} openId={openId} setOpenId={setOpenId}/>,
     },
   ]
 

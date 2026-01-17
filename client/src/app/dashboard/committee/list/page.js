@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CommitteeForm from '@/components/committee/CommitteeForm';
@@ -87,7 +86,7 @@ export default function CommitteeListPage() {
     <div className="p-4">
       <div className="card shadow-sm">
         <div className="card-header bg-light border-bottom">
-          <h5 className="mb-0">👥 Committee</h5>
+          <h5 className="mb-0">Committee</h5>
         </div>
         <div className="card-body">
           {error && <div className="alert alert-danger">{error}</div>}
@@ -99,7 +98,6 @@ export default function CommitteeListPage() {
               <PlusCircle size={18} className="me-2"/> Add
             </button>
           </div>
-
           {showForm && (
             <div>
               <div className="position-fixed top-0 start-0 w-100 h-100" style={{ background: 'rgba(0,0,0,0.35)', zIndex: 2990 }} onClick={() => { setShowForm(false); setEditing(null); }} aria-hidden />
