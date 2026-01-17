@@ -2,30 +2,29 @@
 
 import { useMemo, useState } from "react";
 import {
-  Settings,
-  FileSpreadsheet,
   Handshake,
   DollarSign,
   User,
   CloudUpload,
   FileTextIcon,
 } from "lucide-react";
-import PlanForm from "./PlanForm";
 import { useWards } from "@/hook/useWards";
 import { PlanListHeader } from "./planListHeader";
-import {
-  Edit2,
-  Trash2,
-  Users,
-} from "lucide-react";
+import { Edit2, Trash2, Users } from "lucide-react";
 import ListDataTableCommon from "../common/table";
 import { RowActions } from "../common/rowActions";
+import { useRouter } from "next/navigation";
 
 export default function PlanList({ loading, error, data, onSuccess }) {
   const [openId, setOpenId] = useState(null);
   const { ward, loading: wardLoading } = useWards();
   const [wardFilter, setWardFilter] = useState("");
   const [nameFilter, setnameFilter] = useState("");
+
+  const router = useRouter();
+  const onAction = (type, row) => {
+    router.push(`plan/${row.id}/${type}`);
+  };
 
   const PlanActions = [
     {
@@ -36,7 +35,7 @@ export default function PlanList({ loading, error, data, onSuccess }) {
     {
       label: "आयोजनाको इन्चार्ज",
       icon: User,
-      handler: (row) => onAction("planIncharge", row),
+      handler: (row) => onAction("incharge", row),
     },
     {
       label: "लागत अनुमान",
