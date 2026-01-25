@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'api',
+    'darta_chalani',
 ]
 
 MIDDLEWARE = [

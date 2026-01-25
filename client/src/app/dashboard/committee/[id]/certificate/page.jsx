@@ -8,23 +8,23 @@ import Header from "@/components/certificate/letter_head";
 import DataTable from "@/components/certificate/certificate_table";
 import SignatureCao from "@/components/certificate/signature";
 import CertificateEditor from '@/components/certificate/CertificateEditor';
+import { OfficeService } from "@/services/officeServices";
+import { CommitteeService } from "@/services/committeeService";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export default function PrintPage() {
   const params = useParams();
   const committeeId = params?.id;
   const printRef = useRef();
   const [initialData, setInitialData] = useState(null);
   const [members, setMembers] = useState([]);
-
   useEffect(() => {
     if (!committeeId) return;
     (async () => {
       try {
-        const resp = await axios.get(API_URL + `/committees/${committeeId}`);
+        const resp = await CommitteeService.get(committeeId);
         const data = resp.data || {};
-        setMembers(data.members || []);
+        setMembers(data.members || []); 
         const initial = {
           field1: new Date().toLocaleDateString(),
           field2: data.title || `Certificate for Committee ${committeeId}`,

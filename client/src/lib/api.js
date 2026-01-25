@@ -9,6 +9,7 @@ const api = axios.create({
 
 });
  console.log("API Base URL:", process.env.NEXT_PUBLIC_API_URL);
+ 
 // Optional: interceptors
 api.interceptors.response.use(
   response => response,

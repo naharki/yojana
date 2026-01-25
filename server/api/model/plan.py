@@ -31,11 +31,3 @@ class Projects (models.Model):
         ordering =['registration_number']
 
 
-class PlanWorkflow(models.Model):
-    plan = models.OneToOneField(Plan, on_delete=models.CASCADE)
-    documents_done = models.BooleanField(default=False)
-    incharge_done = models.BooleanField(default=False)
-    estimate_done = models.BooleanField(default=False)
-    executer_done = models.BooleanField(default=False)
-    contract_done = models.BooleanField(default=False)
-    comment_done = models.BooleanField(default=False)
