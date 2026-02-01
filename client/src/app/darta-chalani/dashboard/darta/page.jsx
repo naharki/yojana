@@ -1,10 +1,8 @@
 'use client';
 
-    
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { PlusCircle } from 'lucide-react';
-import DesignationForm from '../../components/designation/designationForm';
 import { DartaService } from '@/services/darta-chalani/dartaChalaniServices';
 import DartaList from '../../components/darta/dartaList';
 import DartaForm from '../../components/darta/dartaForm';
@@ -16,6 +14,7 @@ const Darta = () => {
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+ 
 
   useEffect(() => { fetchItems(); }, []);
   const router = useRouter();
@@ -74,14 +73,14 @@ const Darta = () => {
     <div className="p-4">
       <div className="card shadow-sm">
         <div className="card-header bg-light border-bottom">
-          <h5 className="mb-0">Committee</h5>
+          <h5 className="mb-0">दर्ता किताव</h5>
         </div>
         <div className="card-body">
           {error && <div className="alert alert-danger">{error}</div>}
           {success && <div className="alert alert-success">{success}</div>}
 
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h6 className="mb-0">Committee List</h6>
+            <h6 className="mb-0">दर्ता सुचि</h6>
             <button className="btn btn-primary d-flex align-items-center" onClick={() => { setEditing(null); setShowForm(true); }}>
               <PlusCircle size={18} className="me-2 "/> Add
             </button>

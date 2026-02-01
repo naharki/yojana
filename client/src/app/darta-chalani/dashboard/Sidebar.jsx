@@ -22,7 +22,7 @@ export default function Sidebar({ collapsed = false }) {
     },
     {
       id: 'dartaChalani',
-      label: 'दर्ता समुह',
+      label: 'दर्ता/चलानी',
       icon: FileText,
       subItems: [
         { id: 'darta', label: 'दर्ता', href: '/darta-chalani/dashboard/darta' },
@@ -59,7 +59,7 @@ export default function Sidebar({ collapsed = false }) {
     },
     {
       id: 'administrati',
-      label: 'दर्ता/चलानी',
+      label: 'Audit Logs',
       icon: Settings,
       subItems: [
                { id: 'audit', label: 'Audit Logs', href: '/dashboard/admin/audit' },
@@ -143,8 +143,8 @@ export default function Sidebar({ collapsed = false }) {
           <div style={{ width:40, height:40, borderRadius:8, background: 'linear-gradient(135deg,#6f8cff,#3aa0ff)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700 }}>YJ</div>
         ) : (
           <div>
-            <h1 className="h5 fw-bold text-primary mb-0">📋 Yojana</h1>
-            <small className="text-secondary">Planning Management</small>
+            <h1 className="h5 fw-bold text-primary mb-0">📋 दर्ता/चलानी</h1>
+            <small className="text-secondary">Reg/Ref Management</small>
           </div>
         )}
       </div>

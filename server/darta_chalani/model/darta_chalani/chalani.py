@@ -11,13 +11,8 @@ class Chalani(models.Model):
     sender_section = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.title
-    class Meta:
-        ordering = ['chalani_number']
+     return str(self.chalani_number)
 
-    def __str__(self):
-        return self.chalani_number
-    
     class Meta:
         ordering = ['chalani_number']
     def save(self, *args, **kwargs):

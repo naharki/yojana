@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { DartaService } from "@/services/darta-chalani/dartaChalaniServices";
+import NepaliDatePicker from "@/shared/nepali-date-picker/NepaliDatePicker";
 
 export default function DartaForm({
   onSubmit,
@@ -9,8 +11,8 @@ export default function DartaForm({
 }) {
   const [formData, setFormData] = useState(
     initialData || {
-      darta_samuha: "",
       darta_number: "",
+      darta_samuha: "",
       darta_date: "",
       letter_date: "",
       ref_number: "",
@@ -24,10 +26,30 @@ export default function DartaForm({
     },
   );
   const [loading, setLoading] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(!!initialData);
 
   useEffect(() => {
-    if (initialData) setFormData(initialData);
+    if (initialData) {
+      setFormData((prev) => ({ ...prev, ...initialData }));
+      setIsEditMode(true);
+    } else {
+      // Fetch next darta number for new entry
+      fetchNextDartaNumber();
+      setIsEditMode(false);
+    }
   }, [initialData]);
+
+  const fetchNextDartaNumber = async () => {
+    try {
+      const response = await DartaService.nextDartaNumber();
+      setFormData((prev) => ({
+        ...prev,
+        darta_number: response.data.next_darta_number,
+      }));
+    } catch (err) {
+      console.error("Error fetching next darta number:", err);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,7 +77,7 @@ export default function DartaForm({
 
     try {
       setLoading(true);
-      await onSubmit({
+      const submitData = {
         letter_sender: formData.letter_sender.trim() || "",
         darta_date: formData.darta_date.trim() || "",
         ref_number: formData.ref_number.trim() || "",
@@ -64,18 +86,30 @@ export default function DartaForm({
         subject: formData.subject.trim() || "",
         receiver_section: formData.receiver_section.trim() || "",
         remarks: formData.remarks.trim() || "",
-      });
+        darta_samuha: formData.darta_samuha.trim() || "",
+      };
+
+      // Only include darta_number for new entries (not edits)
+      // Backend will auto-generate it, but frontend can show the expected number
+
+      await onSubmit(submitData);
       if (!initialData) {
         setFormData({
+          darta_number: "",
+          darta_samuha: "",
           darta_date: "",
           letter_catagory: "",
           ref_number: "",
           letter_date: "",
           letter_sender: "",
+          sender_email: "",
+          sender_address: "",
           subject: "",
           receiver_section: "",
           remarks: "",
         });
+        // Fetch next darta number for next entry
+        fetchNextDartaNumber();
       }
     } catch (err) {
       console.error("Darta Form submit error", err);
@@ -86,28 +120,30 @@ export default function DartaForm({
 
   return (
     <form onSubmit={handleSubmit} className="mb-3">
-      <div className="col-md-2 mb-3">
-        <label className="form-label">दर्ता समुह</label>
-        <input
-          name="darta_samuha"
-          className="form-control"
-          onChange={handleChange}
-          value={formData.darta_samuha}
-          placeholder="e.g., 12345"
-        />
-      </div>
       <div className="row">
         <div className="col-md-2 mb-3">
-          <label className="form-label">दर्ता नं</label>
+          <label className="form-label">दर्ता नम्बर</label>
           <input
             name="darta_number"
             className="form-control"
-            value={formData.darta_number}
-            placeholder="e.g., 12345"
-            disabled
+            value={formData.darta_number || ""}
             readOnly
+            disabled
           />
         </div>
+        <div className="col-md-2 mb-3">
+          <label className="form-label">दर्ता समुह</label>
+          <input
+            name="darta_samuha"
+            className="form-control"
+            onChange={handleChange}
+            value={formData.darta_samuha}
+            placeholder="e.g, मुख्य समुह"
+            required
+          />
+        </div>
+      </div>
+      <div className="row">
         <div className="col-md-5 mb-3">
           <label className="form-label">दर्ता मिति </label>
           <input
@@ -119,6 +155,7 @@ export default function DartaForm({
             required
           />
         </div>
+
         <div className="col-md-2 mb-3">
           <label className="form-label">चलानी नं</label>
           <input

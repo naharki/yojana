@@ -14,6 +14,7 @@ export const DartaService = {
   create: (data) => api.post("darta-chalani/darta/", data),
   update: (id, data) => api.put(`darta-chalani/darta/${id}/`, data),
   remove: (id) => api.delete(`darta-chalani/darta/${id}/`),
+  nextDartaNumber: () => api.get("darta-chalani/next-darta-number/"),
 };
 
 export const ChalaniService = {
@@ -22,5 +23,6 @@ export const ChalaniService = {
   create: (data) => api.post("darta-chalani/chalani/", data),
   update: (id, data) => api.put(`darta-chalani/chalani/${id}/`, data),
   remove: (id) => api.delete(`darta-chalani/chalani/${id}/`),
+  nextChalaniNumber: () => api.get("darta-chalani/next-chalani-number/"),
 };
  
