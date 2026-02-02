@@ -1,14 +1,21 @@
 'use client';
 
 import { useState } from 'react';
+import { useMemo } from 'react';
 import { Edit2, Trash2, MoreHorizontal, Users, FileText, CreditCard, Lock } from 'lucide-react';
 import { RowActions } from '../common/rowActions';
+
 import ListDataTableCommon from '../common/table';
+import { ChalaniListHeader } from './chalaniHeader';
 
-export default function ChalaniList({ data, onEdit, onDelete }) {
+export default function ChalaniList({ data, onEdit, onDelete , onSuccess}) {
   const [openId, setOpenId] = useState(null);
+  const [chalaniNumberFilter, setChalaniNumberFilter] = useState('');
+  const [senderFilter, setSenderFilter] = useState('');
+  const [receiverFilter, setReceiverFilter] = useState('');
+  const [subjectFilter, setSubjectFilter] = useState('');
 
-  const dartaActions = [
+  const chalaniActions = [
     { label: 'Edit', icon: Edit2, handler: onEdit },
     {
       label: 'Delete',
@@ -57,7 +64,7 @@ export default function ChalaniList({ data, onEdit, onDelete }) {
     {
       id: "actions",
       label: "⚙️ Action",
-      render: (row) => <RowActions row={row} actions={dartaActions} openId={openId} setOpenId={setOpenId}/>,
+      render: (row) => <RowActions row={row} actions={chalaniActions} openId={openId} setOpenId={setOpenId}/>,
     },
   ]
 
@@ -68,11 +75,48 @@ export default function ChalaniList({ data, onEdit, onDelete }) {
       </div>
     );
   }
+    const filteredData = useMemo(() => {
+      return data.filter((chalani) => {
+        const matchChalaniNumber =
+          chalaniNumberFilter === "" ||
+          chalani.chalani_number === Number(chalaniNumberFilter);
+        const matchesSender = chalani.sender_section
+          .toLowerCase()
+          .includes(senderFilter.toLowerCase());
+          const matchesReceiver = chalani.letter_receiver
+          .toLowerCase()
+          .includes(receiverFilter.toLowerCase());
+        const matchesSubject = chalani.subject
+          .toLowerCase()
+          .includes(subjectFilter.toLowerCase());
+        return matchChalaniNumber && matchesSender && matchesReceiver && matchesSubject;
+      });
+    }, [data, chalaniNumberFilter, senderFilter,receiverFilter,  subjectFilter]);
+  
+    const handleResetFilters = () => {
+      setChalaniNumberFilter("");
+      setSenderFilter("");
+      setSubjectFilter("");
+      setReceiverFilter("");
+    };
 
   return (
-    <div >
-      <ListDataTableCommon columns={columns} data={data} />
-    </div>
+    <div className="p-3">
+          <ChalaniListHeader
+            onSuccess={onSuccess}
+            data={data}
+            filterData={filteredData}
+            chalaniNumberFilter={chalaniNumberFilter}
+            setChalaniNumberFilter={setChalaniNumberFilter}
+            receiverFilter={receiverFilter}
+            setReceiverFilter={setReceiverFilter}
+            subjectFilter={subjectFilter}
+            setSubjectFilter={setSubjectFilter}
+            onReset={handleResetFilters}
+          />
+          <ListDataTableCommon columns={columns} data={filteredData} />
+        </div>
+    
   );
 }
 
