@@ -70,7 +70,7 @@ const Darta = () => {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-2">
       <div className="card shadow-sm">
         <div className="card-header bg-light border-bottom">
           <h5 className="mb-0">दर्ता किताव</h5>
@@ -79,7 +79,7 @@ const Darta = () => {
           {error && <div className="alert alert-danger">{error}</div>}
           {success && <div className="alert alert-success">{success}</div>}
 
-          <div className="d-flex justify-content-between align-items-center mb-3">
+          <div className="d-flex justify-content-between align-items-center mb-2">
             <h6 className="mb-0">दर्ता सुचि</h6>
             <button className="btn btn-primary d-flex align-items-center" onClick={() => { setEditing(null); setShowForm(true); }}>
               <PlusCircle size={18} className="me-2 "/> Add

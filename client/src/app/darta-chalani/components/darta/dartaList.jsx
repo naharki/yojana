@@ -88,13 +88,13 @@ export default function DartaList({ data, onEdit, onDelete, onSuccess }) {
     },
   ];
 
-  if (!data || data.length === 0) {
-    return (
-      <div className="alert alert-info">
-        <p className="mb-0">No data found. Add one to get started.</p>
-      </div>
-    );
-  }
+  // if (!data || data.length === 0) {
+  //   return (
+  //     <div className="alert alert-info">
+  //       <p className="mb-0">No data found. Add one to get started.</p>
+  //     </div>
+  //   );
+  // }
   const filteredData = useMemo(() => {
     return data.filter((darta) => {
       const matchDartaNumber =
@@ -117,10 +117,7 @@ export default function DartaList({ data, onEdit, onDelete, onSuccess }) {
   };
 
   return (
-    <div className="p-3">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h4 className="mb-0">योजनाहरू (Plans)</h4>
-      </div>
+    <div className="p-2">
       <DartaListHeader
         onSuccess={onSuccess}
         data={data}

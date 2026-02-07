@@ -14,7 +14,7 @@ export default function HomePage() {
       titleEn: "User Management System",
       icon: BarChart3,
       color: "primary",
-      url: "https://planning.khaireni.com.np",
+      url: "/user-management/login/",
     },
     {
       titleNp: "योजना व्यवस्थापन प्रणाली",
@@ -28,7 +28,7 @@ export default function HomePage() {
       titleEn: "Darta Chalani System",
       icon: FileText,
       color: "success",
-      url: "/darta-chalani/",
+      url: "/darta-chalani/login/",
     },
     {
       titleNp: "समिति व्यवस्थापन",
@@ -125,7 +125,8 @@ export default function HomePage() {
 
       {/* FOOTER */}
       <footer className="text-center py-3 small text-muted border-top">
-        © {new Date().getFullYear()} Khaireni Rural Municipality
+        © {new Date().getFullYear()} Khaireni Rural Municipality |Designed & Developed by
+        Sujan Naharki Chhetri
       </footer>
 
       {/* Inline animation */}

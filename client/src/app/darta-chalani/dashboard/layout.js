@@ -4,6 +4,9 @@ import { useState } from 'react';
 import Sidebar from './Sidebar';
 import { LogOut, Menu } from 'lucide-react';
 import { useOffice } from "@/hook/useOffice";
+import { DartaChalaniAuthService } from '@/services/darta-chalani/authServices';
+import axios from 'axios';
+import { useEffect } from 'react';
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
@@ -13,13 +16,27 @@ export default function DashboardLayout({ children }) {
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const toggleSidebar = () => setSidebarCollapsed(s => !s);
+  const [loadingPage, setLoadingPage] = useState(true);
+  
+  useEffect(() => {
+    axios
+      .get("http://127.0.0.1:8000/api/users/me/", { withCredentials: true })
+      .then(() => setLoadingPage(false))
+      .catch(() => router.replace("/darta-chalani/login"));
+  }, []);
 
-  const handleLogout = () => {
-    try {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-    } catch (e) {}
-    router.push('/');
+  if (loadingPage) return null; // hide content until auth verified
+
+  const handleLogout = async() => {
+   try {
+    await axios.post(
+      "http://127.0.0.1:8000/api/users/logout/",{},
+      { withCredentials: true }
+    );
+    router.push("/"); // or /login
+  } catch (err) {
+    console.error("Logout failed", err);
+  }
   };
 
   const initials = (office?.name || '')

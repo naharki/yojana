@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -9,8 +8,6 @@ SECRET_KEY = 'django-insecure-=yc(139q59^cwo)a04w@6e)60kr_tup9h*09y$t2ln5h%9r*mo
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -24,6 +21,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'api',
     'darta_chalani',
+    'user_management',
 ]
 
 MIDDLEWARE = [
@@ -37,7 +35,21 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+# custom authentication handling 
+AUTH_USER_MODEL = "user_management.User"
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'user_management.authentications.JWTCookieAuthentication',
+    ),
+}
+
+SIMPLE_JWT = {
+    "AUTH_HEADER_TYPES": ("Bearer"),
+    "BLACKLIST_AFTER_ROTATION": True,
+}
+
+# CORS Configuration
 CORS_ALLOW_ALL_ORIGINS = True
 ROOT_URLCONF = 'config.urls'
 
@@ -60,8 +72,6 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -74,9 +84,8 @@ DATABASES = {
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
+# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -94,20 +103,13 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
 STATIC_URL = 'static/'
 MEDIA_ROOT = '/media/'
 

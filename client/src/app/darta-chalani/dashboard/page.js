@@ -2,10 +2,10 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+// app/darta-chalani/page.js
 
 export default function DashboardPage() {
   const router = useRouter();
-
   useEffect(() => {
     router.push('/darta-chalani/dashboard/');
   }, [router]);

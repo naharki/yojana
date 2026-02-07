@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { DartaService } from "@/services/darta-chalani/dartaChalaniServices";
-import NepaliDatePicker from "@/shared/nepali-date-picker/NepaliDatePicker";
 
 export default function DartaForm({
   onSubmit,
@@ -222,8 +221,9 @@ export default function DartaForm({
             name="remarks"
             type="text"
             className="form-control disable"
-            value={formData.remarks}
+            value={formData.remarks || ''}
             onChange={handleChange}
+            disabled
           />
         </div>
         <div className="col-md-6 mb-3">
@@ -234,6 +234,7 @@ export default function DartaForm({
             className="form-control disable"
             value={formData.sender_email}
             onChange={handleChange}
+            disabled
           />
         </div>
         <div className="col-md-6 mb-3">
@@ -254,6 +255,7 @@ export default function DartaForm({
             onChange={handleChange}
             value={formData.letter_catagory}
             placeholder=""
+            disabled
           />
         </div>
       </div>

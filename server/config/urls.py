@@ -7,4 +7,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('api.urls')),
     path('api/darta-chalani/', include('darta_chalani.urls')),
+    path('api/users/', include('user_management.urls')),
 ]+ static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

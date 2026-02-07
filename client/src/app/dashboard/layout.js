@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import { LogOut, Menu } from 'lucide-react';
 import { useOffice } from "@/hook/useOffice";
+import ProtectedRoute from '../darta-chalani/components/RouteProtection/RouteProtection';
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
@@ -84,7 +85,9 @@ export default function DashboardLayout({ children }) {
         </header>
 
         <div style={{ padding: 20 }}>
+        <ProtectedRoute>
           {children}
+        </ProtectedRoute>
         </div>
       </main>
     </div>
